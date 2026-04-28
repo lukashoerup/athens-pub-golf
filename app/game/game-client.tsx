@@ -11,7 +11,7 @@ import RevealPhase from '@/components/game/RevealPhase'
 import DrinkPhase from '@/components/game/DrinkPhase'
 import ScoringPhase from '@/components/game/ScoringPhase'
 import FinalScoreboard from '@/components/game/FinalScoreboard'
-import Leaderboard from '@/components/Leaderboard'
+import InfoSheet from '@/components/InfoSheet'
 import RouteStrip from '@/components/RouteStrip'
 import RouteTimeline from '@/components/RouteTimeline'
 
@@ -24,7 +24,7 @@ export default function GamePage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [scores, setScores] = useState<Score[]>([])
   const [holes, setHoles] = useState<Hole[]>([])
-  const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
   const [showRoute, setShowRoute] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -281,9 +281,9 @@ export default function GamePage() {
           </div>
 
           <button
-            onClick={() => setShowLeaderboard(true)}
+            onClick={() => setShowInfo(true)}
             className="font-mono text-ink-muted text-xs hover:text-ink"
-            aria-label="Vis leaderboard"
+            aria-label="Vis info"
             style={{ letterSpacing: '0.08em' }}
           >
             🏆
@@ -344,13 +344,13 @@ export default function GamePage() {
         )}
       </main>
 
-      {/* Leaderboard overlay */}
-      {showLeaderboard && (
-        <Leaderboard
+      {/* Info sheet — Stilling | Historik | Regler */}
+      {showInfo && (
+        <InfoSheet
           players={players}
           scores={scores}
           holes={holes}
-          onClose={() => setShowLeaderboard(false)}
+          onClose={() => setShowInfo(false)}
         />
       )}
 

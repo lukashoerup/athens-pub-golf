@@ -4,18 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { Player } from '@/lib/types'
-import { toRoman, formatDateHeader } from '@/lib/format'
+import { formatDateHeader, toRoman } from '@/lib/format'
 import DoricColumn from '@/components/decorations/DoricColumn'
-
-const RULES = [
-  'Alle drikker den SAMME drink. Alle SKAL tømme den.',
-  'Vælg hemmeligt antal slurke INDEN du drikker.',
-  'Hulscore = committed slurke + afstandsstraf fra gruppens gennemsnit.',
-  'Afstandsstraf: ±0.5 = +0, ±1.0 = +1, ±1.5 = +2, ±2.0 = +3, 2.0+ = +4.',
-  'Drukker du IKKE på dit committed tal → +3 strafpoint.',
-  'Committer du 8 eller samme tal som forrige hul → straf-shot.',
-  'Laveste totalscore efter XII stop vinder. Stop I er prøverunde.',
-]
+import Rules from '@/components/Rules'
 
 export default function PlayerSelectPage() {
   const router = useRouter()
@@ -106,19 +97,8 @@ export default function PlayerSelectPage() {
           </button>
 
           {rulesOpen && (
-            <div className="py-5 space-y-3">
-              {RULES.map((rule, i) => (
-                <div key={i} className="flex gap-3">
-                  <span className="font-mono text-gold text-sm pt-0.5 w-6 flex-shrink-0">
-                    {toRoman(i + 1)}
-                  </span>
-                  <p className="font-sans text-ink-secondary text-base leading-snug">{rule}</p>
-                </div>
-              ))}
-              <div className="gold-rule mt-4" />
-              <p className="font-serif italic text-ink-muted text-base text-center pb-1">
-                Stop I er prøverunde — point tæller ikke.
-              </p>
+            <div className="py-5">
+              <Rules compact />
             </div>
           )}
         </div>
