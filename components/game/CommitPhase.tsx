@@ -99,9 +99,9 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
               <div className="flex-1 flex items-center justify-center bg-parchment-light border-y border-rule h-24 pb-2">
                 <span
                   className="font-serif text-ink select-none leading-none"
-                  style={{ fontSize: '3.8rem', fontWeight: 500 }}
+                  style={{ fontSize: '3.4rem', fontWeight: 500, letterSpacing: '0.02em' }}
                 >
-                  {sips}
+                  {toRoman(sips)}
                 </span>
               </div>
               <button
@@ -130,9 +130,9 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
             <p className="smallcaps mb-3">Du committed</p>
             <p
               className="font-serif text-ink leading-none"
-              style={{ fontSize: '5rem', fontWeight: 500 }}
+              style={{ fontSize: '4.6rem', fontWeight: 500, letterSpacing: '0.02em' }}
             >
-              {myScore!.committed_sips}
+              {toRoman(myScore!.committed_sips!)}
             </p>
             <p className="font-serif italic text-ink-muted text-base mt-3">
               {myScore!.committed_sips} slurke
@@ -148,7 +148,7 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
           <div className="text-center">
             <p className="smallcaps">Venter på de andre</p>
             <p className="font-serif text-ink mt-2" style={{ fontSize: '1.4rem' }}>
-              {committedCount} <span className="text-ink-muted">af</span> {totalPlayers}
+              {toRoman(committedCount)} <span className="text-ink-muted">af</span> {toRoman(totalPlayers)}
             </p>
           </div>
         </section>

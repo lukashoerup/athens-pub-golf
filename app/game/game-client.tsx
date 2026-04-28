@@ -14,6 +14,7 @@ import FinalScoreboard from '@/components/game/FinalScoreboard'
 import InfoSheet from '@/components/InfoSheet'
 import RouteStrip from '@/components/RouteStrip'
 import RouteTimeline from '@/components/RouteTimeline'
+import LaurelWreath from '@/components/decorations/LaurelWreath'
 
 const TOTAL_PLAYERS = 6
 
@@ -263,20 +264,23 @@ export default function GamePage() {
     <div className="min-h-screen bg-parchment">
       {/* Sticky header — minimal, classical */}
       <header className="sticky top-0 z-40 bg-parchment/95 backdrop-blur-sm border-b border-rule">
-        <div className="max-w-md mx-auto flex items-center justify-between px-5 py-3">
+        <div className="max-w-md mx-auto flex items-center justify-between px-5 py-3 gap-2">
           {canSwitchPlayer ? (
             <button
               onClick={handleSwitchPlayer}
-              className="font-mono text-ink-muted text-sm hover:text-ink"
+              className="flex items-center gap-1.5 text-ink-muted hover:text-ink min-w-0"
               aria-label="Skift spiller"
             >
-              ‹
+              <span className="font-mono text-sm">‹</span>
+              <span className="font-serif text-base text-ink truncate">{currentPlayer.name}</span>
             </button>
           ) : (
-            <span className="w-3" />
+            <span className="font-serif text-base text-ink truncate min-w-0">
+              {currentPlayer.name}
+            </span>
           )}
 
-          <div className="text-center">
+          <div className="text-center flex-shrink-0">
             <p className="smallcaps-ink">
               Stop {romanize(currentHolePosition)} <span className="text-gold">·</span> {romanize(totalHoles)}
             </p>
@@ -284,11 +288,10 @@ export default function GamePage() {
 
           <button
             onClick={() => setShowInfo(true)}
-            className="font-mono text-ink-muted text-xs hover:text-ink"
+            className="text-ink-muted hover:text-ink p-1 -m-1 flex items-center justify-center"
             aria-label="Vis info"
-            style={{ letterSpacing: '0.08em' }}
           >
-            🏆
+            <LaurelWreath size={22} color="currentColor" />
           </button>
         </div>
 

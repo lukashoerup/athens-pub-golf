@@ -45,15 +45,17 @@ export default function DrinkPhase({ hole, scores, players, myScore, onDrinkResu
           <p className="smallcaps mb-3">Du committed</p>
           <p
             className="font-serif text-ink leading-none"
-            style={{ fontSize: '5rem', fontWeight: 500 }}
+            style={{ fontSize: '4.6rem', fontWeight: 500, letterSpacing: '0.02em' }}
           >
-            {myScore.committed_sips}
+            {toRoman(myScore.committed_sips!)}
           </p>
-          <p className="font-serif italic text-ink-muted text-base mt-3">slurke</p>
+          <p className="font-serif italic text-ink-muted text-base mt-3">
+            {myScore.committed_sips} slurke
+          </p>
 
           <div className="gold-rule mt-5" />
           <p className="font-serif text-ink text-lg mt-3 leading-tight">
-            Drak du den på {myScore.committed_sips}?
+            Drak du den på {toRoman(myScore.committed_sips!)} slurke?
           </p>
         </div>
       )}

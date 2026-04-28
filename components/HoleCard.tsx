@@ -1,5 +1,6 @@
 import type { Hole } from '@/lib/types'
 import { toRoman } from '@/lib/format'
+import TempleMarker from '@/components/decorations/TempleMarker'
 
 interface Props {
   hole: Hole
@@ -46,7 +47,8 @@ export default function HoleCard({ hole, showMapLink = true }: Props) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 font-sans text-ink underline underline-offset-4 decoration-gold decoration-1 hover:decoration-2 text-base"
         >
-          📍 Åbn i Google Maps
+          <TempleMarker size={16} color="#B89A60" />
+          Åbn i Google Maps
         </a>
       )}
     </article>

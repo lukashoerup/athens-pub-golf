@@ -3,6 +3,23 @@
 import type { Hole, Score, Player } from '@/lib/types'
 import { toRoman } from '@/lib/format'
 import { calculateGroupAverage } from '@/lib/scoring'
+import TempleMarker from '@/components/decorations/TempleMarker'
+
+function MapsLink({ hole }: { hole: Hole }) {
+  if (!hole.maps_url) return null
+  return (
+    <a
+      href={hole.maps_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className="inline-flex items-center gap-1.5 mt-2 text-ink-secondary text-sm font-sans underline underline-offset-4 decoration-gold/60 decoration-1 hover:decoration-2"
+    >
+      <TempleMarker size={14} color="#B89A60" />
+      Google Maps
+    </a>
+  )
+}
 
 interface Props {
   holes: Hole[]
@@ -116,6 +133,7 @@ export default function RouteTimeline({ holes, scores, players, currentHoleId, o
                           Gennemsnit: {avg.toFixed(1)} slurke
                         </p>
                       )}
+                      <MapsLink hole={hole} />
                     </>
                   )}
 
@@ -126,18 +144,22 @@ export default function RouteTimeline({ holes, scores, players, currentHoleId, o
                       <p className="smallcaps mt-1">
                         {hole.district} · {hole.drink} · Max {toRoman(hole.max_sips)}
                       </p>
+                      <MapsLink hole={hole} />
                     </>
                   )}
 
-                  {/* Future stops — Strategi B: district + stop_type only */}
+                  {/* Future stops — name + district visible, drink hidden */}
                   {isFuture && (
                     <>
-                      <p className="font-serif italic text-ink-muted text-lg leading-tight mt-1">
-                        🔒 {hole.district}
+                      <p className="font-serif text-ink text-lg leading-tight mt-1">{hole.name}</p>
+                      <p className="smallcaps mt-1">
+                        {hole.district}
+                        {hole.stop_type ? ` · ${hole.stop_type}` : ''}
                       </p>
-                      {hole.stop_type && (
-                        <p className="smallcaps mt-1">{hole.stop_type}</p>
-                      )}
+                      <p className="smallcaps text-ink-muted mt-1 italic">
+                        🔒 Drink afsløres ved ankomst
+                      </p>
+                      <MapsLink hole={hole} />
                     </>
                   )}
                 </div>
@@ -149,7 +171,7 @@ export default function RouteTimeline({ holes, scores, players, currentHoleId, o
         {/* Footer hint */}
         <div className="flex-shrink-0 px-6 py-3 border-t border-rule">
           <p className="text-center font-serif italic text-ink-muted text-base">
-            Stederne afsløres når I ankommer.
+            Drikkene afsløres ved ankomst.
           </p>
         </div>
       </div>

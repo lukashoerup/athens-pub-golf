@@ -112,9 +112,9 @@ export default function RevealPhase({ hole, scores, players, onRevealComplete }:
               <p className="font-serif font-semibold text-ink text-lg mt-1.5">{rp.player.name}</p>
               <p
                 className={`font-serif leading-none mt-2.5 ${numberColor}`}
-                style={{ fontSize: '3.2rem', fontWeight: 500 }}
+                style={{ fontSize: '2.8rem', fontWeight: 500, letterSpacing: '0.02em' }}
               >
-                {revealed ? rp.sips : '·'}
+                {revealed ? toRoman(rp.sips) : '·'}
               </p>
               <p className="smallcaps mt-2">{label.text}</p>
             </div>
