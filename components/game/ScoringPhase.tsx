@@ -24,7 +24,10 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
   const leaderboard = computeLeaderboard(players, allScores, holes)
 
   const sorted = [...holeScores].sort((a, b) => a.total - b.total)
-  const isLastHole = hole.id === 12
+  const lastHoleId = Math.max(...holes.map((h) => h.id))
+  const isLastHole = hole.id === lastHoleId
+  const sortedIds = holes.map((h) => h.id).sort((a, b) => a - b)
+  const nextHoleId = sortedIds[sortedIds.indexOf(hole.id) + 1]
 
   async function handleNext() {
     setAdvancing(true)
@@ -142,7 +145,7 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
           ? 'Går videre...'
           : isLastHole
           ? 'Afslut · Vis Resultat'
-          : `Fortsæt · Stop ${toRoman(hole.id + 1)}`}
+          : `Fortsæt · Stop ${nextHoleId != null ? toRoman(nextHoleId) : ''}`}
       </button>
     </div>
   )

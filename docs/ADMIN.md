@@ -212,6 +212,49 @@ UPDATE holes SET max_sips = 6 WHERE id = 8;  -- be careful: existing committed_s
 
 ---
 
+## RECIPE 11b: Add a brand-new stop mid-game
+
+> "Vi opdagede et fedt sted, lad os tilføje det som hul 13"
+
+The app dynamically reads the total number of holes from the DB, so adding a row "just works".
+
+```sql
+INSERT INTO holes (id, name, address, maps_url, drink, drink_emoji, max_sips, stop_type, fun_fact, is_practice, district, coords)
+VALUES (
+  13,                                    -- next available id
+  'Six d.o.g.s',                         -- name
+  'Avramiotou 6-8',                      -- address
+  'https://maps.google.com/?q=Six+d.o.g.s+Athens',
+  'Spritz',                              -- drink
+  '🍸',                                  -- emoji
+  5,                                     -- max_sips
+  'Bonus',                               -- stop_type
+  'Avant-garde art bar med koncerter — fundet ved et tilfælde.',
+  false,                                 -- is_practice
+  'Monastiraki',                         -- district
+  '37.97°N · 23.72°Ø'                    -- coords
+);
+```
+
+⚡ **Realtime:** All 6 phones see the new stop count immediately. The "next stop" button on the scoring screen will lead to it.
+
+---
+
+## RECIPE 11c: Skip a stop without deleting it
+
+> "Vi springer hul 9 over — der er for langt at gå"
+
+**Don't DELETE the hole** (that would cascade-delete any scores from it). Just advance the game past it:
+
+```sql
+-- If currently on hole 8 scoring, jump straight to hole 10 committing
+UPDATE game_state SET current_hole = 10, phase = 'committing' WHERE id = 1;
+```
+
+The hole still exists in the DB (so historical references stay valid), but no scores are written for it. The leaderboard ignores holes with no scores.
+
+---
+
 ## RECIPE 12: Reorder stops (move a stop later)
 
 > "Vi tager hul 9 og 10 i omvendt rækkefølge"

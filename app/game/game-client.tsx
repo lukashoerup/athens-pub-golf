@@ -180,15 +180,18 @@ export default function GamePage() {
   )
 
   const handleNextHole = useCallback(async () => {
-    if (!gameState) return
-    const nextHole = gameState.current_hole + 1
-    if (nextHole > 12) return
+    if (!gameState || holes.length === 0) return
+    // Find next existing hole id (handles gaps + added stops dynamically)
+    const sortedIds = holes.map((h) => h.id).sort((a, b) => a - b)
+    const idx = sortedIds.indexOf(gameState.current_hole)
+    const nextHole = sortedIds[idx + 1]
+    if (nextHole == null) return // No more holes — game over
     await supabase
       .from('game_state')
       .update({ current_hole: nextHole, phase: 'committing' })
       .eq('id', 1)
       .eq('phase', 'scoring')
-  }, [gameState])
+  }, [gameState, holes])
 
   const handleSwitchPlayer = useCallback(() => {
     localStorage.removeItem('athens_player_id')
@@ -216,13 +219,31 @@ export default function GamePage() {
     )
   }
 
-  const currentHole = holes.find((h) => h.id === gameState.current_hole)!
+  const currentHole = holes.find((h) => h.id === gameState.current_hole)
   const currentHoleScores = scores.filter((s) => s.hole_id === gameState.current_hole)
   const myCurrentScore = currentHoleScores.find((s) => s.player_id === currentPlayer.id)
   const canSwitchPlayer = !myCurrentScore || myCurrentScore.committed_sips == null
 
-  // Final scoreboard (after hole 12 scoring)
-  if (gameState.phase === 'scoring' && gameState.current_hole === 12) {
+  // Sorted hole ids — handles non-contiguous IDs (added/removed stops)
+  const sortedHoleIds = holes.map((h) => h.id).sort((a, b) => a - b)
+  const totalHoles = sortedHoleIds.length
+  const lastHoleId = sortedHoleIds[sortedHoleIds.length - 1]
+  const currentHolePosition = sortedHoleIds.indexOf(gameState.current_hole) + 1
+  const isLastHole = gameState.current_hole === lastHoleId
+
+  // Defensive: if current hole was deleted from DB, show error
+  if (!currentHole) {
+    return (
+      <div className="min-h-screen bg-parchment flex flex-col items-center justify-center gap-4 px-6">
+        <p className="font-serif italic text-wine text-lg text-center">
+          Stop {gameState.current_hole} findes ikke længere. Få Lukas til at fixe det.
+        </p>
+      </div>
+    )
+  }
+
+  // Final scoreboard — when on the last hole's scoring phase
+  if (gameState.phase === 'scoring' && isLastHole) {
     return (
       <FinalScoreboard
         players={players}
@@ -252,7 +273,7 @@ export default function GamePage() {
 
           <div className="text-center">
             <p className="smallcaps-ink">
-              Stop {romanize(gameState.current_hole)} <span className="text-gold">·</span> XII
+              Stop {romanize(currentHolePosition)} <span className="text-gold">·</span> {romanize(totalHoles)}
             </p>
           </div>
 
