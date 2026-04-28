@@ -12,6 +12,8 @@ import DrinkPhase from '@/components/game/DrinkPhase'
 import ScoringPhase from '@/components/game/ScoringPhase'
 import FinalScoreboard from '@/components/game/FinalScoreboard'
 import Leaderboard from '@/components/Leaderboard'
+import RouteStrip from '@/components/RouteStrip'
+import RouteTimeline from '@/components/RouteTimeline'
 
 const TOTAL_PLAYERS = 6
 
@@ -23,6 +25,7 @@ export default function GamePage() {
   const [scores, setScores] = useState<Score[]>([])
   const [holes, setHoles] = useState<Hole[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showRoute, setShowRoute] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -283,8 +286,17 @@ export default function GamePage() {
             aria-label="Vis leaderboard"
             style={{ letterSpacing: '0.08em' }}
           >
-            {players.length} spillere
+            🏆
           </button>
+        </div>
+
+        {/* Route progress strip — tap to open timeline */}
+        <div className="max-w-md mx-auto border-t border-rule/50">
+          <RouteStrip
+            holes={holes}
+            currentHoleId={gameState.current_hole}
+            onClick={() => setShowRoute(true)}
+          />
         </div>
       </header>
 
@@ -339,6 +351,17 @@ export default function GamePage() {
           scores={scores}
           holes={holes}
           onClose={() => setShowLeaderboard(false)}
+        />
+      )}
+
+      {/* Route timeline overlay */}
+      {showRoute && (
+        <RouteTimeline
+          holes={holes}
+          scores={scores}
+          players={players}
+          currentHoleId={gameState.current_hole}
+          onClose={() => setShowRoute(false)}
         />
       )}
     </div>
