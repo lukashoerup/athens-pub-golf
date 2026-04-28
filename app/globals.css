@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 18px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: #FAF6F0;
+    color: #1A1207;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-bg-card rounded-card shadow-card border-t-2 border-accent-primary p-5;
+  }
+
+  .btn-primary {
+    @apply w-full h-14 rounded-xl bg-accent-primary text-text-primary font-sans font-semibold text-lg uppercase tracking-wide active:scale-95 transition-transform shadow-md flex items-center justify-center gap-2 disabled:opacity-40;
+  }
+
+  .btn-secondary {
+    @apply w-full h-12 rounded-xl bg-bg-elevated text-text-secondary font-sans font-semibold text-base active:scale-95 transition-transform flex items-center justify-center gap-2;
+  }
+
+  .btn-success {
+    @apply w-full h-14 rounded-xl bg-score-great text-white font-sans font-semibold text-lg active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-40;
+  }
+
+  .btn-danger {
+    @apply w-full h-14 rounded-xl bg-score-bad text-white font-sans font-semibold text-lg active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-40;
+  }
+
+  .maps-btn {
+    @apply flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-accent-navy text-white font-sans font-semibold text-base active:scale-95 transition-transform;
+  }
+
+  .greek-divider {
+    @apply flex items-center gap-3 my-4;
+  }
+
+  .greek-divider::before,
+  .greek-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: #D9CEBD;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 132, 29, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(196, 132, 29, 0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+.animate-pop-in {
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
