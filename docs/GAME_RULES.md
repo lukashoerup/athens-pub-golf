@@ -93,6 +93,24 @@ Honor system. The group polices each other.
 
 ---
 
+## Late-game score multiplier
+
+The last three real holes have weighted scoring — late-game mistakes hurt more.
+
+| Stop | Multiplier | Example |
+|---|---|---|
+| 10 (Barley Cargo R2) | × 1.5 | Score 4 → counts as 6 |
+| 11 (STOA Athens) | × 2.0 | Score 4 → counts as 8 |
+| 12 (BOO! Athens) | × 2.5 | Score 4 → counts as 10 |
+
+Stored as `holes.score_multiplier` (NUMERIC). Default 1.0 for all other holes. Practice round (hole 1) ignores the multiplier since it doesn't count anyway.
+
+The leaderboard formula multiplies the raw hole score (`base + distance + commitment`) by `holes.score_multiplier` then rounds to integer:
+
+```
+hole_total = ROUND( (committed_sips + distance_penalty + commitment_penalty) * score_multiplier )
+```
+
 ## Final scoreboard awards (after hole 12)
 
 Computed client-side from raw scores:

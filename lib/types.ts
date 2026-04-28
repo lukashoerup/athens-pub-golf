@@ -17,6 +17,7 @@ export interface Hole {
   is_practice: boolean
   district: string | null
   coords: string | null
+  score_multiplier: number
 }
 
 export interface Score {
@@ -44,5 +45,7 @@ export interface HoleScore {
   base: number
   distancePenalty: number
   commitmentPenalty: number
+  rawTotal: number
+  multiplier: number
   total: number
 }

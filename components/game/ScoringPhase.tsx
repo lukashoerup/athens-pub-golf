@@ -18,7 +18,8 @@ interface Props {
 export default function ScoringPhase({ hole, scores, players, allScores, holes, onNextHole }: Props) {
   const [advancing, setAdvancing] = useState(false)
 
-  const holeScores = computeHoleScores(players, scores, hole.id, hole.is_practice)
+  const multiplier = hole.score_multiplier ?? 1
+  const holeScores = computeHoleScores(players, scores, hole.id, hole.is_practice, multiplier)
   const allSips = scores.filter((s) => s.committed_sips != null).map((s) => s.committed_sips as number)
   const avg = calculateGroupAverage(allSips)
   const leaderboard = computeLeaderboard(players, allScores, holes)
@@ -49,6 +50,11 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
         <p className="font-serif italic text-ink-muted mt-2 text-base">
           Gennemsnit: {avg.toFixed(1)} slurke
         </p>
+        {multiplier > 1 && !hole.is_practice && (
+          <p className="smallcaps-gold mt-3">
+            × {multiplier} score-multiplikator
+          </p>
+        )}
         <MeanderRule width={140} className="mx-auto mt-5" />
       </div>
 
@@ -90,6 +96,7 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
                       {base}
                       {distancePenalty > 0 && ` +${distancePenalty}`}
                       {commitmentPenalty > 0 && ` +${commitmentPenalty}`}
+                      {multiplier > 1 && ` ×${multiplier}`}
                     </span>
                     <span className={`font-serif ${tone}`} style={{ fontSize: '1.6rem', fontWeight: 600 }}>
                       {total}

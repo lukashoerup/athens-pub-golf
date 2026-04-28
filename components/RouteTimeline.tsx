@@ -144,6 +144,9 @@ export default function RouteTimeline({ holes, scores, players, currentHoleId, o
                       <p className="smallcaps mt-1">
                         {hole.district} · {hole.drink} · Max {toRoman(hole.max_sips)}
                       </p>
+                      {hole.score_multiplier > 1 && (
+                        <p className="smallcaps-gold mt-1">× {hole.score_multiplier} multiplikator</p>
+                      )}
                       <MapsLink hole={hole} />
                     </>
                   )}
@@ -156,6 +159,9 @@ export default function RouteTimeline({ holes, scores, players, currentHoleId, o
                         {hole.district}
                         {hole.stop_type ? ` · ${hole.stop_type}` : ''}
                       </p>
+                      {hole.score_multiplier > 1 && (
+                        <p className="smallcaps-gold mt-1">× {hole.score_multiplier} multiplikator</p>
+                      )}
                       <p className="smallcaps text-ink-muted mt-1 italic">
                         🔒 Drink afsløres ved ankomst
                       </p>

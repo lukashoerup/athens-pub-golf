@@ -50,6 +50,7 @@ Pre-seeded with 12 holes. **Realtime-enabled** — UPDATEs propagate to all 6 ph
 | `is_practice` | BOOLEAN | `true` only for hole 1 |
 | `district` | TEXT | small-caps eyebrow above hole name |
 | `coords` | TEXT | coordinates string shown next to district |
+| `score_multiplier` | NUMERIC | default 1.0; late-game holes use 1.5/2.0/2.5 to weight scores |
 
 ### `scores` ⭐ (most editing happens here)
 One row per player per hole. Created when a player commits.

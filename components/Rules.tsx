@@ -157,7 +157,33 @@ export default function Rules({ compact = false }: Props) {
         </ul>
       </section>
 
-      {/* Section 7 — Winner */}
+      {/* Section 7 — Late-game multiplier */}
+      <section className="space-y-2">
+        <p className="smallcaps-ink">Sluttiden tæller mere</p>
+        <p className="font-sans text-ink-secondary text-base leading-snug">
+          De sidste tre stop har en score-multiplikator. Senlige fejl koster mere — sjusk ikke når der er meget på spil.
+        </p>
+        <div className="border border-rule mt-2">
+          <div className="grid grid-cols-3 bg-parchment-dark/50 border-b border-rule">
+            <p className="smallcaps px-3 py-2">Stop</p>
+            <p className="smallcaps px-3 py-2 text-center">Multiplier</p>
+            <p className="smallcaps px-3 py-2 text-right">Eksempel</p>
+          </div>
+          {[
+            { stop: 'X', mult: '× 1.5', example: 'Score 4 → 6' },
+            { stop: 'XI', mult: '× 2.0', example: 'Score 4 → 8' },
+            { stop: 'XII', mult: '× 2.5', example: 'Score 4 → 10' },
+          ].map((row, i, arr) => (
+            <div key={i} className={`grid grid-cols-3 ${i < arr.length - 1 ? 'border-b border-rule' : ''}`}>
+              <p className="font-mono text-ink text-base font-semibold px-3 py-2">{row.stop}</p>
+              <p className="font-mono text-gold text-base font-semibold text-center px-3 py-2">{row.mult}</p>
+              <p className="font-serif italic text-ink-muted text-base text-right px-3 py-2">{row.example}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Section 8 — Winner */}
       <section className="space-y-2">
         <p className="smallcaps-ink">Vinderen</p>
         <p className="font-sans text-ink-secondary text-base leading-snug">

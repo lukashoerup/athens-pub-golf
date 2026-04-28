@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS holes (
   fun_fact TEXT,
   is_practice BOOLEAN DEFAULT FALSE,
   district TEXT,
-  coords TEXT
+  coords TEXT,
+  score_multiplier NUMERIC NOT NULL DEFAULT 1.0
 );
 
 CREATE TABLE IF NOT EXISTS scores (

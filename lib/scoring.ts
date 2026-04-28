@@ -39,7 +39,8 @@ export function computeHoleScores(
   players: Player[],
   scores: Score[],
   holeId: number,
-  isPractice: boolean
+  isPractice: boolean,
+  multiplier: number = 1
 ): HoleScore[] {
   const holeScores = scores.filter((s) => s.hole_id === holeId && s.committed_sips !== null)
   const allSips = holeScores.map((s) => s.committed_sips as number)
@@ -48,13 +49,23 @@ export function computeHoleScores(
   return players.map((player) => {
     const score = holeScores.find((s) => s.player_id === player.id)
     if (!score || score.committed_sips === null) {
-      return { player, score, base: 0, distancePenalty: 0, commitmentPenalty: 0, total: 0 }
+      return {
+        player,
+        score,
+        base: 0,
+        distancePenalty: 0,
+        commitmentPenalty: 0,
+        rawTotal: 0,
+        multiplier,
+        total: 0,
+      }
     }
     const base = score.committed_sips
     const distancePenalty = isPractice ? 0 : calculateDistancePenalty(base, average)
     const commitmentPenalty = isPractice ? 0 : score.completed === false ? 3 : 0
-    const total = base + distancePenalty + commitmentPenalty
-    return { player, score, base, distancePenalty, commitmentPenalty, total }
+    const rawTotal = base + distancePenalty + commitmentPenalty
+    const total = isPractice ? rawTotal : Math.round(rawTotal * multiplier)
+    return { player, score, base, distancePenalty, commitmentPenalty, rawTotal, multiplier, total }
   })
 }
 
@@ -82,8 +93,10 @@ export function computeLeaderboard(
         const average = calculateGroupAverage(allSips)
         const distancePenalty = calculateDistancePenalty(myScore.committed_sips, average)
         const commitmentPenalty = myScore.completed === false ? 3 : 0
+        const rawTotal = myScore.committed_sips + distancePenalty + commitmentPenalty
+        const multiplier = hole.score_multiplier ?? 1
 
-        total += myScore.committed_sips + distancePenalty + commitmentPenalty
+        total += Math.round(rawTotal * multiplier)
 
         if (myScore.penalty_shot) penaltyShots += 1
         if (myScore.completed === false) commitmentFails += 1

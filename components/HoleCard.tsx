@@ -22,6 +22,13 @@ export default function HoleCard({ hole, showMapLink = true }: Props) {
         </div>
       )}
 
+      {/* Multiplier badge — only for late high-stakes holes */}
+      {hole.score_multiplier > 1 && !hole.is_practice && (
+        <div className="inline-flex items-center gap-2 border border-gold/60 bg-gold/8 px-3 py-1.5">
+          <span className="smallcaps-gold">× {hole.score_multiplier} multiplikator</span>
+        </div>
+      )}
+
       {/* Stop name */}
       <h2 className="display-lg">{hole.name}</h2>
 
