@@ -56,3 +56,22 @@ Alle nyttige SQL-kommandoer er i bunden af `supabase/schema.sql`.
 - **Database + Realtime:** Supabase (gratis tier)
 - **Styling:** Tailwind CSS
 - **Hosting:** Vercel (gratis tier)
+
+---
+
+## Under turen — fix ting via Claude
+
+Hvis noget går galt under turen og du har brug for at fikse DB'en fra mobilen:
+
+1. **Åbn Claude** (claude.ai på mobil eller computer) i en ny chat
+2. **Paste i hele indholdet af [`CLAUDE.md`](./CLAUDE.md)** som første besked, eller giv Claude link til repoet
+3. **Beskriv problemet** på dansk: *"Misse trykkede ❌ ved en fejl på hul 6"*
+4. **Claude returnerer ready-to-paste SQL**
+5. **Åbn** [Supabase SQL Editor](https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new) → paste → Run
+
+Se [`docs/ADMIN.md`](./docs/ADMIN.md) for alle recipes direkte.
+
+### Bookmark inden afrejse
+- 📋 Supabase SQL Editor: `https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new`
+- 🤖 [claude.ai](https://claude.ai) — log ind og opret en ny chat-tråd hvis nødvendigt
+- 🔗 Dette repo så Claude kan læse `CLAUDE.md`
