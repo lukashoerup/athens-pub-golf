@@ -5,8 +5,9 @@ import type { Hole, Score, Player, Waypoint } from '@/lib/types'
 import { toRoman } from '@/lib/format'
 import { calculateGroupAverage } from '@/lib/scoring'
 import TempleMarker from '@/components/decorations/TempleMarker'
+import HostNote from '@/components/HostNote'
 
-function WaypointRow({ waypoint }: { waypoint: Waypoint }) {
+function WaypointRow({ waypoint, currentPlayerName }: { waypoint: Waypoint; currentPlayerName: string }) {
   return (
     <div className="flex items-stretch gap-4 -mt-2 mb-2">
       {/* Spacer in dot column to align with timeline rail */}
@@ -39,6 +40,7 @@ function WaypointRow({ waypoint }: { waypoint: Waypoint }) {
             Se på kort
           </a>
         )}
+        <HostNote text={waypoint.host_notes} currentPlayerName={currentPlayerName} />
       </div>
     </div>
   )
@@ -66,10 +68,11 @@ interface Props {
   scores: Score[]
   players: Player[]
   currentHoleId: number
+  currentPlayerName: string
   onClose: () => void
 }
 
-export default function RouteTimeline({ holes, waypoints = [], scores, players, currentHoleId, onClose }: Props) {
+export default function RouteTimeline({ holes, waypoints = [], scores, players, currentHoleId, currentPlayerName, onClose }: Props) {
   const sortedHoles = [...holes].sort((a, b) => a.id - b.id)
   const currentIdx = sortedHoles.findIndex((h) => h.id === currentHoleId)
 
@@ -209,6 +212,9 @@ export default function RouteTimeline({ holes, waypoints = [], scores, players, 
                       <MapsLink hole={hole} />
                     </>
                   )}
+
+                  {/* Host notes — only shown to Lukas, on past/current/future */}
+                  <HostNote text={hole.host_notes} currentPlayerName={currentPlayerName} />
                 </div>
               </div>
 
@@ -217,7 +223,7 @@ export default function RouteTimeline({ holes, waypoints = [], scores, players, 
                 .filter((w) => w.after_hole_id === hole.id)
                 .sort((a, b) => a.display_order - b.display_order)
                 .map((wp) => (
-                  <WaypointRow key={`wp-${wp.id}`} waypoint={wp} />
+                  <WaypointRow key={`wp-${wp.id}`} waypoint={wp} currentPlayerName={currentPlayerName} />
                 ))}
               </Fragment>
             )

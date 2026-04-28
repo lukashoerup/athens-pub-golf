@@ -26,10 +26,11 @@ interface Props {
   myScore: Score | undefined
   committedCount: number
   totalPlayers: number
+  currentPlayerName: string
   onCommit: (sips: number) => Promise<void>
 }
 
-export default function CommitPhase({ hole, myScore, committedCount, totalPlayers, onCommit }: Props) {
+export default function CommitPhase({ hole, myScore, committedCount, totalPlayers, currentPlayerName, onCommit }: Props) {
   const defaultSips = Math.ceil(hole.max_sips / 2)
   const [sips, setSips] = useState(defaultSips)
   const [submitting, setSubmitting] = useState(false)
@@ -50,7 +51,7 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
 
   return (
     <div className="space-y-8">
-      <HoleCard hole={hole} />
+      <HoleCard hole={hole} currentPlayerName={currentPlayerName} />
 
       {hole.is_practice && (
         <div className="border border-gold/50 bg-gold/5 px-5 py-4">

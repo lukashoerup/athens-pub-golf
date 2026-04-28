@@ -18,6 +18,7 @@ export interface Hole {
   district: string | null
   coords: string | null
   score_multiplier: number
+  host_notes: string | null
 }
 
 export interface Waypoint {
@@ -29,6 +30,7 @@ export interface Waypoint {
   maps_url: string | null
   after_hole_id: number
   display_order: number
+  host_notes: string | null
 }
 
 export interface Score {

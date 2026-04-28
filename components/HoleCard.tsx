@@ -1,13 +1,15 @@
 import type { Hole } from '@/lib/types'
 import { toRoman } from '@/lib/format'
 import TempleMarker from '@/components/decorations/TempleMarker'
+import HostNote from '@/components/HostNote'
 
 interface Props {
   hole: Hole
   showMapLink?: boolean
+  currentPlayerName?: string
 }
 
-export default function HoleCard({ hole, showMapLink = true }: Props) {
+export default function HoleCard({ hole, showMapLink = true, currentPlayerName = '' }: Props) {
   return (
     <article className="space-y-5">
       {/* District + coordinates row */}
@@ -58,6 +60,9 @@ export default function HoleCard({ hole, showMapLink = true }: Props) {
           Åbn i Google Maps
         </a>
       )}
+
+      {/* Host notes — only shown to Lukas */}
+      <HostNote text={hole.host_notes} currentPlayerName={currentPlayerName} />
     </article>
   )
 }

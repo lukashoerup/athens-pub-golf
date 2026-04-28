@@ -316,6 +316,7 @@ export default function GamePage() {
             myScore={myCurrentScore}
             committedCount={currentHoleScores.filter((s) => s.committed_sips != null).length}
             totalPlayers={TOTAL_PLAYERS}
+            currentPlayerName={currentPlayer.name}
             onCommit={handleCommit}
           />
         )}
@@ -372,6 +373,7 @@ export default function GamePage() {
           scores={scores}
           players={players}
           currentHoleId={gameState.current_hole}
+          currentPlayerName={currentPlayer.name}
           onClose={() => setShowRoute(false)}
         />
       )}
