@@ -22,6 +22,21 @@ interface RevealedPlayer {
   position: number // rank by lowest distance penalty
 }
 
+function penaltyReasonText(reason: string | null, maxSips: number): string {
+  switch (reason) {
+    case 'max':
+      return `committed ${toRoman(maxSips)} (max)`
+    case 'min':
+      return 'committed I (min)'
+    case 'same_as_last':
+      return 'samme tal som forrige'
+    case '8':
+      return 'committed VIII' // legacy data
+    default:
+      return 'straf-shot'
+  }
+}
+
 function distanceLabel(sips: number, avg: number): { text: string; tone: 'good' | 'neutral' | 'bad' } {
   const diff = +(sips - avg).toFixed(1)
   if (Math.abs(diff) <= 0.5) return { text: 'Spot on', tone: 'good' }
@@ -123,9 +138,7 @@ export default function RevealPhase({ hole, scores, players, onRevealComplete }:
               return (
                 <p key={s.id} className="font-serif italic text-ink text-base">
                   {player?.name} —{' '}
-                  {s.penalty_shot_reason === '8'
-                    ? 'committed VIII'
-                    : 'samme tal som forrige'}
+                  {penaltyReasonText(s.penalty_shot_reason, hole.max_sips)}
                 </p>
               )
             })}

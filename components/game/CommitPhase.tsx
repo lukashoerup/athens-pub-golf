@@ -6,6 +6,21 @@ import HoleCard from '@/components/HoleCard'
 import Amphora from '@/components/decorations/Amphora'
 import { toRoman } from '@/lib/format'
 
+function penaltyShotLabel(reason: string | null, maxSips: number): string {
+  switch (reason) {
+    case 'max':
+      return `committed ${toRoman(maxSips)} (max)`
+    case 'min':
+      return 'committed I (min)'
+    case 'same_as_last':
+      return 'samme tal som forrige'
+    case '8':
+      return 'committed VIII' // legacy data
+    default:
+      return ''
+  }
+}
+
 interface Props {
   hole: Hole
   myScore: Score | undefined
@@ -67,7 +82,7 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
               <span className="smallcaps-ink">Dit tal</span>
-              {sips === 8 && (
+              {(sips === hole.max_sips || sips === 1) && (
                 <span className="smallcaps text-wine">Straf-shot venter</span>
               )}
             </div>
@@ -124,8 +139,7 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
             </p>
             {myScore!.penalty_shot && (
               <p className="smallcaps text-wine mt-4">
-                ⚠ Straf-shot —{' '}
-                {myScore!.penalty_shot_reason === '8' ? 'committed VIII' : 'samme tal som forrige'}
+                ⚠ Straf-shot — {penaltyShotLabel(myScore!.penalty_shot_reason, hole.max_sips)}
               </p>
             )}
           </div>

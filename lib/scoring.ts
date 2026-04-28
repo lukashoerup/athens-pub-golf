@@ -16,12 +16,19 @@ export function calculateDistancePenalty(committedSips: number, average: number)
 
 export function checkPenaltyShot(
   committedSips: number,
+  maxSips: number,
   previousSips: number | null,
   currentHoleId: number
 ): { penalty: boolean; reason: string | null } {
-  if (committedSips === 8) {
-    return { penalty: true, reason: '8' }
+  // Top extreme — committing the maximum (per-hole, e.g. 8 for beer, 3 for shot)
+  if (committedSips === maxSips) {
+    return { penalty: true, reason: 'max' }
   }
+  // Bottom extreme — committing 1 (just nipping)
+  if (committedSips === 1) {
+    return { penalty: true, reason: 'min' }
+  }
+  // Same as previous hole's commit — only counts from hole 3 onward
   if (previousSips !== null && committedSips === previousSips && currentHoleId > 2) {
     return { penalty: true, reason: 'same_as_last' }
   }

@@ -137,12 +137,22 @@ export default function Rules({ compact = false }: Props) {
         </p>
         <ul className="font-sans text-ink-secondary text-base space-y-1.5 leading-snug list-none">
           <li>
-            <strong>Du committer VIII</strong> — automatisk straf-shot.<br />
-            <em className="font-serif text-ink-muted text-sm">For at folk ikke bare bunker hver gang.</em>
+            <strong>Du committer max</strong> (fx VIII på øl, III på shot) — straf-shot.<br />
+            <em className="font-serif text-ink-muted text-sm">
+              Stop med bare at bunke. Max ændres per stop — så det er altid det største mulige tal.
+            </em>
           </li>
           <li>
-            <strong>Du committer samme tal som sidst</strong> — straf-shot.<br />
-            <em className="font-serif text-ink-muted text-sm">For at tvinge variation. Gælder fra Stop III.</em>
+            <strong>Du committer I</strong> (kun ét lille nip) — straf-shot.<br />
+            <em className="font-serif text-ink-muted text-sm">
+              Stop med bare at nippe. Ingen low-effort taktik.
+            </em>
+          </li>
+          <li>
+            <strong>Du committer samme tal som forrige stop</strong> — straf-shot.<br />
+            <em className="font-serif text-ink-muted text-sm">
+              For at tvinge variation. Gælder fra Stop III.
+            </em>
           </li>
         </ul>
       </section>

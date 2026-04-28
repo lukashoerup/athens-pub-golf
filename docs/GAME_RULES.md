@@ -58,14 +58,19 @@ hole_score = committed_sips
 
 Triggered automatically by the app at **commit time**:
 
-| Trigger | Result |
-|---|---|
-| Player commits **8** sips | Penalty shot before next hole |
-| Player commits **same number as their previous hole** | Penalty shot |
+| Trigger | Reason code | Result |
+|---|---|---|
+| Player commits **max sips** (per-hole, e.g. 8 on beer, 3 on shot) | `'max'` | Penalty shot before next hole |
+| Player commits **1** (just nipping) | `'min'` | Penalty shot |
+| Player commits **same number as their previous hole** | `'same_as_last'` | Penalty shot |
 
-Exempt: hole 1 (practice) and hole 2 (no "previous hole" with real stakes). The "same as last" rule kicks in from hole 3 onward.
+Exempt: hole 1 (practice) and hole 2 (no "previous hole" with real stakes). The "same as last" rule kicks in from hole 3 onward. The `max` and `min` rules apply on every hole including practice.
+
+Note: max varies per hole (8 for beer, 6 for cocktail/coffee, 5 for taster, 3 for shot). The penalty scales — committing 3 on a shot triggers `'max'` just like committing 8 on a beer.
 
 Penalty shots are **cosmetic on the scoreboard** (🥃 counter) and add no points. The pain is purely physical.
+
+Legacy reason code: `'8'` (replaced by `'max'`). Old rows from before this change may still use `'8'`; the UI handles both.
 
 ---
 

@@ -149,7 +149,9 @@ export default function GamePage() {
         (s) => s.player_id === currentPlayer.id && s.hole_id === gameState.current_hole - 1
       )
       const prevSips = prevScore?.committed_sips ?? null
-      const { penalty, reason } = checkPenaltyShot(sips, prevSips, gameState.current_hole)
+      const currentHoleData = holes.find((h) => h.id === gameState.current_hole)
+      const maxSips = currentHoleData?.max_sips ?? 8
+      const { penalty, reason } = checkPenaltyShot(sips, maxSips, prevSips, gameState.current_hole)
 
       await supabase.from('scores').insert({
         player_id: currentPlayer.id,
@@ -159,7 +161,7 @@ export default function GamePage() {
         penalty_shot_reason: reason,
       })
     },
-    [currentPlayer, gameState, scores]
+    [currentPlayer, gameState, scores, holes]
   )
 
   const handleRevealComplete = useCallback(async () => {

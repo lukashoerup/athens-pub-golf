@@ -159,9 +159,11 @@ Existing hole 5 scores are untouched. The app will display them again as if you'
 
 > "Misse should have a penalty shot but it didn't trigger"
 
+Reason codes: `'max'` (committed max sips for hole), `'min'` (committed 1), `'same_as_last'` (same as previous hole).
+
 ```sql
 UPDATE scores
-SET penalty_shot = true, penalty_shot_reason = '8'  -- or 'same_as_last'
+SET penalty_shot = true, penalty_shot_reason = 'max'  -- or 'min' / 'same_as_last'
 WHERE player_id = (SELECT id FROM players WHERE name = 'Misse')
   AND hole_id = 6;
 ```
