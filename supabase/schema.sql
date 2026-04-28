@@ -17,11 +17,13 @@ CREATE TABLE IF NOT EXISTS holes (
   address TEXT NOT NULL,
   maps_url TEXT,
   drink TEXT NOT NULL,
-  drink_emoji TEXT DEFAULT '🍺',
+  drink_emoji TEXT DEFAULT '🏺',
   max_sips INT NOT NULL,
   stop_type TEXT,
   fun_fact TEXT,
-  is_practice BOOLEAN DEFAULT FALSE
+  is_practice BOOLEAN DEFAULT FALSE,
+  district TEXT,
+  coords TEXT
 );
 
 CREATE TABLE IF NOT EXISTS scores (
@@ -61,6 +63,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON game_state TO anon, authenticated;
 
 ALTER PUBLICATION supabase_realtime ADD TABLE scores;
 ALTER PUBLICATION supabase_realtime ADD TABLE game_state;
+ALTER PUBLICATION supabase_realtime ADD TABLE holes;
 
 -- ============================================================
 -- SEED: Players

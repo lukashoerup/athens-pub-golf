@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import type { Hole, Player, Score } from '@/lib/types'
 import { computeHoleScores, computeLeaderboard, calculateGroupAverage } from '@/lib/scoring'
-import { HOLES } from '@/data/holes'
 import { toRoman } from '@/lib/format'
 import MeanderRule from '@/components/decorations/MeanderRule'
 
@@ -16,13 +15,13 @@ interface Props {
   onNextHole: () => Promise<void>
 }
 
-export default function ScoringPhase({ hole, scores, players, allScores, onNextHole }: Props) {
+export default function ScoringPhase({ hole, scores, players, allScores, holes, onNextHole }: Props) {
   const [advancing, setAdvancing] = useState(false)
 
   const holeScores = computeHoleScores(players, scores, hole.id, hole.is_practice)
   const allSips = scores.filter((s) => s.committed_sips != null).map((s) => s.committed_sips as number)
   const avg = calculateGroupAverage(allSips)
-  const leaderboard = computeLeaderboard(players, allScores, HOLES)
+  const leaderboard = computeLeaderboard(players, allScores, holes)
 
   const sorted = [...holeScores].sort((a, b) => a.total - b.total)
   const isLastHole = hole.id === 12

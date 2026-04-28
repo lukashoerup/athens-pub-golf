@@ -183,7 +183,72 @@ Clean slate. Players keep their accounts; all scores wiped.
 
 ---
 
-## RECIPE 11: Change a player's name (typo, etc.)
+## RECIPE 11: Replace a stop venue mid-game (we can't get in!)
+
+> "Vi kan ikke komme ind på Beer Time, vi går til Brew Bar i stedet"
+
+```sql
+UPDATE holes
+SET name = 'Brew Bar',
+    address = 'Sokratous 36, Psiri',
+    maps_url = 'https://maps.google.com/?q=Brew+Bar+Athens',
+    drink = 'IPA Pint',
+    drink_emoji = '🏺',
+    max_sips = 8,
+    stop_type = 'Happy Hour',
+    fun_fact = 'Sidste øjebliks-omvej. Brew Bar har 30+ haner og er Athens nørd-paradis for craft beer.',
+    district = 'Psiri',
+    coords = '37.97°N · 23.72°Ø'
+WHERE id = 8;
+```
+
+⚡ **Realtime:** All 6 phones receive the new venue info instantly. No app refresh needed.
+
+If you only need to change ONE field, just include that:
+```sql
+UPDATE holes SET drink = 'Mythos Red' WHERE id = 8;
+UPDATE holes SET max_sips = 6 WHERE id = 8;  -- be careful: existing committed_sips may now exceed max_sips, but that's fine — DB doesn't enforce it
+```
+
+---
+
+## RECIPE 12: Reorder stops (move a stop later)
+
+> "Vi tager hul 9 og 10 i omvendt rækkefølge"
+
+⚠️ This is risky if either stop has been played. The `holes.id` column is the FK target for scores, so changing IDs would break things. Instead, swap names + content:
+
+```sql
+-- Swap holes 9 and 10's content (id stays, but everything else swaps)
+WITH swap AS (
+  SELECT
+    (SELECT row_to_json(h.*) FROM holes h WHERE id = 9) AS nine,
+    (SELECT row_to_json(h.*) FROM holes h WHERE id = 10) AS ten
+)
+UPDATE holes SET
+  name = (SELECT (ten->>'name') FROM swap),
+  address = (SELECT (ten->>'address') FROM swap),
+  maps_url = (SELECT (ten->>'maps_url') FROM swap),
+  drink = (SELECT (ten->>'drink') FROM swap),
+  drink_emoji = (SELECT (ten->>'drink_emoji') FROM swap),
+  max_sips = (SELECT (ten->>'max_sips')::int FROM swap),
+  stop_type = (SELECT (ten->>'stop_type') FROM swap),
+  fun_fact = (SELECT (ten->>'fun_fact') FROM swap),
+  district = (SELECT (ten->>'district') FROM swap),
+  coords = (SELECT (ten->>'coords') FROM swap)
+WHERE id = 9;
+
+UPDATE holes SET
+  name = (SELECT (nine->>'name') FROM swap),
+  -- ... etc
+WHERE id = 10;
+```
+
+Easier: skip both via Recipe 5/6 and do them in your preferred order in person.
+
+---
+
+## RECIPE 13: Change a player's name (typo, etc.)
 
 ```sql
 UPDATE players SET name = 'Nicolai' WHERE name = 'Nico';

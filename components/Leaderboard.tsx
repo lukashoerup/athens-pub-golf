@@ -2,7 +2,6 @@
 
 import type { Player, Score, Hole } from '@/lib/types'
 import { computeLeaderboard } from '@/lib/scoring'
-import { HOLES } from '@/data/holes'
 import { toRoman } from '@/lib/format'
 
 interface Props {
@@ -12,10 +11,10 @@ interface Props {
   onClose: () => void
 }
 
-export default function Leaderboard({ players, scores, onClose }: Props) {
-  const board = computeLeaderboard(players, scores, HOLES)
+export default function Leaderboard({ players, scores, holes, onClose }: Props) {
+  const board = computeLeaderboard(players, scores, holes)
   const playedStops = new Set(
-    scores.filter((s) => s.committed_sips != null && !HOLES.find((h) => h.id === s.hole_id)?.is_practice).map((s) => s.hole_id)
+    scores.filter((s) => s.committed_sips != null && !holes.find((h) => h.id === s.hole_id)?.is_practice).map((s) => s.hole_id)
   ).size
 
   return (

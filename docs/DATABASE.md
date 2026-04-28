@@ -34,20 +34,22 @@ Pre-seeded with 6 players. Don't add or remove rows — only fix names.
 6. Rode
 
 ### `holes`
-Pre-seeded with 12 holes. Reference data — don't modify during play.
+Pre-seeded with 12 holes. **Realtime-enabled** — UPDATEs propagate to all 6 phones instantly. Use this for mid-game route changes (see ADMIN.md → Recipe 11).
 
 | Column | Type | Notes |
 |---|---|---|
-| `id` | INT | 1–12, primary key |
+| `id` | INT | 1–12, primary key. **Don't change** — used as FK in scores. |
 | `name` | TEXT | display name |
 | `address` | TEXT | for Google Maps link |
 | `maps_url` | TEXT | full URL |
 | `drink` | TEXT | display name of drink |
-| `drink_emoji` | TEXT | single emoji |
+| `drink_emoji` | TEXT | single emoji (default 🏺) |
 | `max_sips` | INT | upper bound on stepper |
 | `stop_type` | TEXT | category label |
-| `fun_fact` | TEXT | shown in commit phase |
+| `fun_fact` | TEXT | shown in commit phase as field-note |
 | `is_practice` | BOOLEAN | `true` only for hole 1 |
+| `district` | TEXT | small-caps eyebrow above hole name |
+| `coords` | TEXT | coordinates string shown next to district |
 
 ### `scores` ⭐ (most editing happens here)
 One row per player per hole. Created when a player commits.
@@ -180,7 +182,8 @@ ORDER BY total_score ASC;
 ## Realtime
 
 These tables broadcast changes to all connected clients:
-- `scores` (INSERT, UPDATE)
-- `game_state` (UPDATE)
+- `scores` (INSERT, UPDATE) — for live game progression
+- `game_state` (UPDATE) — for phase transitions
+- `holes` (UPDATE) — for mid-game route changes (replace a venue, change drink, etc.)
 
 Any change you make via SQL will instantly sync to all 6 phones. Be deliberate.

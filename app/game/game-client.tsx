@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import type { Player, Score, GameState } from '@/lib/types'
-import { HOLES } from '@/data/holes'
+import type { Player, Score, GameState, Hole } from '@/lib/types'
 import { checkPenaltyShot } from '@/lib/scoring'
 import { toRoman as romanize } from '@/lib/format'
 import CommitPhase from '@/components/game/CommitPhase'
@@ -22,6 +21,7 @@ export default function GamePage() {
   const [gameState, setGameState] = useState<GameState | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [scores, setScores] = useState<Score[]>([])
+  const [holes, setHoles] = useState<Hole[]>([])
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -36,11 +36,12 @@ export default function GamePage() {
 
     async function initialize() {
       try {
-        const [playerRes, playersRes, gameStateRes, scoresRes] = await Promise.all([
+        const [playerRes, playersRes, gameStateRes, scoresRes, holesRes] = await Promise.all([
           supabase.from('players').select('*').eq('id', playerId).single(),
           supabase.from('players').select('*').order('display_order'),
           supabase.from('game_state').select('*').eq('id', 1).single(),
           supabase.from('scores').select('*'),
+          supabase.from('holes').select('*').order('id'),
         ])
 
         if (playerRes.error || !playerRes.data) {
@@ -52,6 +53,7 @@ export default function GamePage() {
         setPlayers(playersRes.data || [])
         setGameState(gameStateRes.data)
         setScores(scoresRes.data || [])
+        setHoles(holesRes.data || [])
       } catch {
         setError('Kunne ikke hente spildata. Tjek forbindelsen og prøv igen.')
       } finally {
@@ -87,6 +89,15 @@ export default function GamePage() {
         { event: 'UPDATE', schema: 'public', table: 'game_state' },
         (payload) => {
           setGameState(payload.new as GameState)
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'holes' },
+        (payload) => {
+          setHoles((prev) =>
+            prev.map((h) => (h.id === (payload.new as Hole).id ? (payload.new as Hole) : h))
+          )
         }
       )
       .subscribe()
@@ -205,7 +216,7 @@ export default function GamePage() {
     )
   }
 
-  const currentHole = HOLES.find((h) => h.id === gameState.current_hole)!
+  const currentHole = holes.find((h) => h.id === gameState.current_hole)!
   const currentHoleScores = scores.filter((s) => s.hole_id === gameState.current_hole)
   const myCurrentScore = currentHoleScores.find((s) => s.player_id === currentPlayer.id)
   const canSwitchPlayer = !myCurrentScore || myCurrentScore.committed_sips == null
@@ -216,7 +227,7 @@ export default function GamePage() {
       <FinalScoreboard
         players={players}
         scores={scores}
-        holes={HOLES}
+        holes={holes}
         currentPlayer={currentPlayer}
       />
     )
@@ -294,7 +305,7 @@ export default function GamePage() {
             scores={currentHoleScores}
             players={players}
             allScores={scores}
-            holes={HOLES}
+            holes={holes}
             onNextHole={handleNextHole}
           />
         )}
@@ -305,7 +316,7 @@ export default function GamePage() {
         <Leaderboard
           players={players}
           scores={scores}
-          holes={HOLES}
+          holes={holes}
           onClose={() => setShowLeaderboard(false)}
         />
       )}

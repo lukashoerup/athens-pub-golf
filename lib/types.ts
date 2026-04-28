@@ -15,6 +15,8 @@ export interface Hole {
   stop_type: string
   fun_fact: string
   is_practice: boolean
+  district: string | null
+  coords: string | null
 }
 
 export interface Score {
