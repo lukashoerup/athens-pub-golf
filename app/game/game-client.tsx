@@ -350,6 +350,8 @@ export default function GamePage() {
           players={players}
           scores={scores}
           holes={holes}
+          gameState={gameState}
+          currentPlayerId={currentPlayer.id}
           onClose={() => setShowInfo(false)}
         />
       )}
