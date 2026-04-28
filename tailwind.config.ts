@@ -9,22 +9,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'bg-primary': '#FAF6F0',
+        // Surfaces — clean white with subtle blue tints
+        'bg-primary': '#F6FAFD',
         'bg-card': '#FFFFFF',
-        'bg-elevated': '#F0E9DE',
-        'bg-hero': '#2C1810',
-        'accent-primary': '#C4841D',
-        'accent-warm': '#A0522D',
-        'accent-olive': '#5C6B3C',
-        'accent-navy': '#1B365D',
+        'bg-elevated': '#E8F1FA',
+        'bg-hero': '#0D5EAF',          // Greek flag blue
+        'bg-hero-deep': '#073D7A',     // Deeper navy for layered contrast
+
+        // Accents
+        'accent-primary': '#D4A24C',   // Ancient gold (highlights, buttons)
+        'accent-warm': '#A23F3F',      // Wine red (red-figure pottery)
+        'accent-olive': '#5C6B3C',     // Olive grove
+        'accent-marble': '#EFEAD9',    // Marble / parchment
+        'accent-blue': '#0D5EAF',      // Greek flag blue, for accents
+
+        // Score colors (kept for clarity but harmonized with palette)
         'score-great': '#2D6A30',
-        'score-ok': '#7D6C2A',
-        'score-bad': '#A63D2F',
-        'text-primary': '#1A1207',
-        'text-secondary': '#5C4F3A',
-        'text-muted': '#8C7E6A',
-        'text-on-dark': '#FAF6F0',
-        border: '#D9CEBD',
+        'score-ok': '#B8893E',
+        'score-bad': '#A23F3F',
+
+        // Text
+        'text-primary': '#0E2240',     // Deep navy ink
+        'text-secondary': '#3D4D6B',
+        'text-muted': '#7989A3',
+        'text-on-dark': '#F6FAFD',
+
+        // Borders
+        border: '#CDDAE8',
       },
       fontFamily: {
         serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
@@ -32,8 +43,8 @@ const config: Config = {
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       boxShadow: {
-        card: '0 2px 8px rgba(44, 24, 16, 0.08)',
-        'card-lg': '0 4px 20px rgba(44, 24, 16, 0.12)',
+        card: '0 2px 8px rgba(13, 94, 175, 0.08)',
+        'card-lg': '0 6px 24px rgba(13, 94, 175, 0.14)',
       },
       borderRadius: {
         card: '16px',

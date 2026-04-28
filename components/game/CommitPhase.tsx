@@ -64,7 +64,7 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
               −
             </button>
 
-            <div className="w-32 h-32 rounded-full border-4 border-accent-primary flex items-center justify-center shadow-card animate-pulse-gold">
+            <div className="w-32 h-32 rounded-full border-4 border-accent-blue flex items-center justify-center shadow-card animate-pulse-blue">
               <span
                 className="font-mono font-bold text-text-primary select-none"
                 style={{ fontSize: '52px', lineHeight: 1 }}

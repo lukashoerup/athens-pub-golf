@@ -11,8 +11,8 @@
   }
 
   body {
-    background-color: #FAF6F0;
-    color: #1A1207;
+    background-color: #F6FAFD;
+    color: #0E2240;
     font-family: 'Source Sans 3', system-ui, sans-serif;
     min-height: 100vh;
   }
@@ -24,10 +24,18 @@
 
 @layer components {
   .card {
+    @apply bg-bg-card rounded-card shadow-card border-t-2 border-accent-blue p-5;
+  }
+
+  .card-gold {
     @apply bg-bg-card rounded-card shadow-card border-t-2 border-accent-primary p-5;
   }
 
   .btn-primary {
+    @apply w-full h-14 rounded-xl bg-accent-blue text-white font-sans font-semibold text-lg uppercase tracking-wide active:scale-95 transition-transform shadow-md flex items-center justify-center gap-2 disabled:opacity-40;
+  }
+
+  .btn-gold {
     @apply w-full h-14 rounded-xl bg-accent-primary text-text-primary font-sans font-semibold text-lg uppercase tracking-wide active:scale-95 transition-transform shadow-md flex items-center justify-center gap-2 disabled:opacity-40;
   }
 
@@ -44,7 +52,7 @@
   }
 
   .maps-btn {
-    @apply flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-accent-navy text-white font-sans font-semibold text-base active:scale-95 transition-transform;
+    @apply flex items-center justify-center gap-2 w-full h-12 rounded-xl bg-accent-blue text-white font-sans font-semibold text-base active:scale-95 transition-transform;
   }
 
   .greek-divider {
@@ -56,7 +64,24 @@
     content: '';
     flex: 1;
     height: 1px;
-    background-color: #D9CEBD;
+    background-color: #CDDAE8;
+  }
+
+  /* Greek meander (key) pattern — used as horizontal divider */
+  .greek-meander {
+    height: 14px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14' fill='none'><path d='M0 0 H28 M0 14 H28 M2 2 V12 H10 V6 H6 V8 M14 2 V12 H22 V6 H18 V8' stroke='%230D5EAF' stroke-width='1' fill='none'/></svg>");
+    background-repeat: repeat-x;
+    background-size: 28px 14px;
+    opacity: 0.6;
+  }
+
+  .greek-meander-gold {
+    height: 14px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='14' viewBox='0 0 28 14' fill='none'><path d='M0 0 H28 M0 14 H28 M2 2 V12 H10 V6 H6 V8 M14 2 V12 H22 V6 H18 V8' stroke='%23D4A24C' stroke-width='1' fill='none'/></svg>");
+    background-repeat: repeat-x;
+    background-size: 28px 14px;
+    opacity: 0.7;
   }
 }
 
@@ -78,9 +103,9 @@
   100% { transform: scale(1); opacity: 1; }
 }
 
-@keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 132, 29, 0.4); }
-  50% { box-shadow: 0 0 0 12px rgba(196, 132, 29, 0); }
+@keyframes pulse-blue {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(13, 94, 175, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(13, 94, 175, 0); }
 }
 
 .animate-fade-in-up {
@@ -91,6 +116,6 @@
   animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-.animate-pulse-gold {
-  animation: pulse-gold 2s ease-in-out infinite;
+.animate-pulse-blue {
+  animation: pulse-blue 2s ease-in-out infinite;
 }
