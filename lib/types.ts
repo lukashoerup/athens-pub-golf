@@ -20,6 +20,17 @@ export interface Hole {
   score_multiplier: number
 }
 
+export interface Waypoint {
+  id: number
+  name: string
+  description: string
+  district: string | null
+  coords: string | null
+  maps_url: string | null
+  after_hole_id: number
+  display_order: number
+}
+
 export interface Score {
   id: string
   player_id: string

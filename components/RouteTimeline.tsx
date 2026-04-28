@@ -1,9 +1,48 @@
 'use client'
 
-import type { Hole, Score, Player } from '@/lib/types'
+import { Fragment } from 'react'
+import type { Hole, Score, Player, Waypoint } from '@/lib/types'
 import { toRoman } from '@/lib/format'
 import { calculateGroupAverage } from '@/lib/scoring'
 import TempleMarker from '@/components/decorations/TempleMarker'
+
+function WaypointRow({ waypoint }: { waypoint: Waypoint }) {
+  return (
+    <div className="flex items-stretch gap-4 -mt-2 mb-2">
+      {/* Spacer in dot column to align with timeline rail */}
+      <div className="flex flex-col items-center pt-2 w-2.5 shrink-0">
+        <div className="w-2.5 flex justify-center">
+          <TempleMarker size={12} color="#B89A60" />
+        </div>
+      </div>
+
+      <div className="flex-1 pb-3 pl-1 border-l-2 border-gold/30 pl-4 -ml-2">
+        <div className="flex items-baseline gap-2">
+          <span className="smallcaps-gold">På vejen</span>
+          {waypoint.district && <span className="smallcaps">· {waypoint.district}</span>}
+        </div>
+        <p className="font-serif italic text-ink text-base leading-tight mt-1">
+          {waypoint.name}
+        </p>
+        <p className="font-sans text-ink-secondary text-sm mt-1.5 leading-snug">
+          {waypoint.description}
+        </p>
+        {waypoint.maps_url && (
+          <a
+            href={waypoint.maps_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1.5 mt-2 text-ink-secondary text-sm font-sans underline underline-offset-4 decoration-gold/60 decoration-1 hover:decoration-2"
+          >
+            <TempleMarker size={12} color="#B89A60" />
+            Se på kort
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function MapsLink({ hole }: { hole: Hole }) {
   if (!hole.maps_url) return null
@@ -23,13 +62,14 @@ function MapsLink({ hole }: { hole: Hole }) {
 
 interface Props {
   holes: Hole[]
+  waypoints?: Waypoint[]
   scores: Score[]
   players: Player[]
   currentHoleId: number
   onClose: () => void
 }
 
-export default function RouteTimeline({ holes, scores, players, currentHoleId, onClose }: Props) {
+export default function RouteTimeline({ holes, waypoints = [], scores, players, currentHoleId, onClose }: Props) {
   const sortedHoles = [...holes].sort((a, b) => a.id - b.id)
   const currentIdx = sortedHoles.findIndex((h) => h.id === currentHoleId)
 
@@ -81,7 +121,8 @@ export default function RouteTimeline({ holes, scores, players, currentHoleId, o
             const isLast = i === sortedHoles.length - 1
 
             return (
-              <div key={hole.id} className="flex items-stretch gap-4">
+              <Fragment key={hole.id}>
+              <div className="flex items-stretch gap-4">
                 {/* Timeline rail (dot + connector line) */}
                 <div className="flex flex-col items-center pt-2">
                   <span
@@ -170,6 +211,15 @@ export default function RouteTimeline({ holes, scores, players, currentHoleId, o
                   )}
                 </div>
               </div>
+
+              {/* Waypoints between this stop and the next */}
+              {waypoints
+                .filter((w) => w.after_hole_id === hole.id)
+                .sort((a, b) => a.display_order - b.display_order)
+                .map((wp) => (
+                  <WaypointRow key={`wp-${wp.id}`} waypoint={wp} />
+                ))}
+              </Fragment>
             )
           })}
         </div>

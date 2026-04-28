@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import type { Player, Score, GameState, Hole } from '@/lib/types'
+import type { Player, Score, GameState, Hole, Waypoint } from '@/lib/types'
 import { checkPenaltyShot } from '@/lib/scoring'
 import { toRoman as romanize } from '@/lib/format'
 import CommitPhase from '@/components/game/CommitPhase'
@@ -25,6 +25,7 @@ export default function GamePage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [scores, setScores] = useState<Score[]>([])
   const [holes, setHoles] = useState<Hole[]>([])
+  const [waypoints, setWaypoints] = useState<Waypoint[]>([])
   const [showInfo, setShowInfo] = useState(false)
   const [showRoute, setShowRoute] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -40,12 +41,13 @@ export default function GamePage() {
 
     async function initialize() {
       try {
-        const [playerRes, playersRes, gameStateRes, scoresRes, holesRes] = await Promise.all([
+        const [playerRes, playersRes, gameStateRes, scoresRes, holesRes, waypointsRes] = await Promise.all([
           supabase.from('players').select('*').eq('id', playerId).single(),
           supabase.from('players').select('*').order('display_order'),
           supabase.from('game_state').select('*').eq('id', 1).single(),
           supabase.from('scores').select('*'),
           supabase.from('holes').select('*').order('id'),
+          supabase.from('waypoints').select('*').order('after_hole_id, display_order'),
         ])
 
         if (playerRes.error || !playerRes.data) {
@@ -58,6 +60,7 @@ export default function GamePage() {
         setGameState(gameStateRes.data)
         setScores(scoresRes.data || [])
         setHoles(holesRes.data || [])
+        setWaypoints(waypointsRes.data || [])
       } catch {
         setError('Kunne ikke hente spildata. Tjek forbindelsen og prøv igen.')
       } finally {
@@ -365,6 +368,7 @@ export default function GamePage() {
       {showRoute && (
         <RouteTimeline
           holes={holes}
+          waypoints={waypoints}
           scores={scores}
           players={players}
           currentHoleId={gameState.current_hole}
