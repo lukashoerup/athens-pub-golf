@@ -1,9 +1,11 @@
 # Admin Recipes — Athens Pub Golf
 
-Ready-to-paste SQL for fixing common in-game issues. **Always run in Supabase SQL Editor**:
-`https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new`
+Ready-to-paste SQL for fixing common in-game issues.
 
-> **For Claude reading this**: When the user describes a problem, identify the closest recipe below, fill in the variables (player name, hole number, etc.), and respond with ONLY the SQL block + a one-sentence explanation. Don't lecture. Lukas is drunk. He needs SQL he can copy in 2 seconds.
+**If you have Supabase MCP**: run via `execute_sql` on project `dxzexvudbxkidhydwylw`.
+**If not**: paste into Supabase SQL Editor → `https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new`
+
+> **For Claude reading this**: When the user describes a problem, identify the closest recipe below, fill in the variables (player name, hole number, etc.), and either run it directly (MCP mode) or respond with the SQL block + one-sentence explanation (manual mode). Don't lecture. Lukas is drunk. Be terse.
 
 ---
 

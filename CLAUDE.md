@@ -12,12 +12,23 @@ A real-time multiplayer pub-golf scoring webapp for 6 players (Nico, Kris, Misse
 
 ## How you help during the trip
 
-1. Lukas describes a problem in Danish or English ("Misse trykkede ❌ ved en fejl på hul 6")
+**There are two modes depending on what tools you have:**
+
+### Mode A — You have Supabase MCP (`mcp__*__execute_sql` available)
+You can run SQL directly against the DB. Project ID: `dxzexvudbxkidhydwylw`.
+
+1. Lukas describes a problem ("Misse trykkede ❌ ved en fejl på hul 6")
 2. You read [`docs/ADMIN.md`](docs/ADMIN.md) for the right recipe
-3. You respond with **ready-to-paste SQL** + a one-line description
-4. Lukas pastes it into Supabase SQL Editor on his phone:
+3. **Run the SQL directly** via `execute_sql` against project `dxzexvudbxkidhydwylw`
+4. **Echo back what you did** in plain English so Lukas can verify
+5. Don't ask permission for routine fixes — Lukas wants autonomous behavior. Do confirm before destructive ops on multiple holes (e.g. "this will reset 3 holes — proceed?").
+
+### Mode B — No Supabase MCP available (fallback)
+
+1. Read [`docs/ADMIN.md`](docs/ADMIN.md) for the right recipe
+2. Respond with **ready-to-paste SQL** + a one-line description
+3. Lukas pastes it into Supabase SQL Editor on his phone:
    `https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new`
-5. Done.
 
 ## Read these in order when helping
 
