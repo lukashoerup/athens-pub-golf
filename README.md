@@ -14,7 +14,7 @@ Real-time multiplayer pub-golf med hemmelige commits, distance-baseret scoring, 
 | **Supabase SQL Editor** (paste-and-run) | https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new |
 | **Supabase project ID** | `dxzexvudbxkidhydwylw` |
 | **Vercel project** | `athens-pub-golf-app` (Hobby) |
-| **GitHub** | `lukashoerup/athens-pub-golf` (private) |
+| **GitHub** | `lukashoerup/athens-pub-golf` (public — claude.ai kan fetche docs direkte) |
 | **Default branch** | `main` (auto-deploy til Vercel ved push) |
 
 **Spillere (6):** Nico, Kris, Misse, Lukas (host), Rasmus, Rode  
@@ -35,15 +35,15 @@ Real-time multiplayer pub-golf med hemmelige commits, distance-baseret scoring, 
 
 Hvis noget går galt under turen og du har brug for at fikse DB'en fra mobilen:
 
-1. **Åbn Claude** ([claude.ai](https://claude.ai) på mobil eller computer) i en ny chat
-2. **Første besked**: *"Læs CLAUDE.md fra https://github.com/lukashoerup/athens-pub-golf/blob/main/CLAUDE.md og hjælp mig under en pub-golf-tur"*
-   - Hvis repoet er public (gør det evt. public før turen) kan claude.ai med GitHub-connector læse det direkte
-   - Hvis ikke: paste indholdet af `CLAUDE.md` ind manuelt
-3. **Beskriv problemet** på dansk: *"Misse trykkede ❌ ved en fejl på hul 6"*
-4. **Claude returnerer ready-to-paste SQL** (eller eksekverer direkte hvis Supabase MCP er aktiv)
-5. **Åbn SQL Editor** (link ovenfor) → paste → Run
+1. **Åbn [claude.ai](https://claude.ai)** på mobilen, ny chat.
+2. **Første besked — copy/paste denne:**
+   > Læs https://raw.githubusercontent.com/lukashoerup/athens-pub-golf/main/CLAUDE.md og hjælp mig med Athens Pub Golf-spillet.
+3. Claude fetcher `CLAUDE.md`, ser Quick Reference og alle URLs, og fetcher `docs/ADMIN.md` ved behov.
+4. **Beskriv problemet** på dansk: *"Misse trykkede ❌ ved en fejl på hul 6"*
+5. **Claude returnerer ready-to-paste SQL** (eller eksekverer direkte hvis Supabase-MCP er aktiv på din claude.ai-konto).
+6. **Åbn SQL Editor** (URL i Quick Reference) → paste → Run.
 
-Se `docs/ADMIN.md` for alle 13+ recipes direkte.
+Se `docs/ADMIN.md` for alle 15+ recipes direkte. Repoet er public, så claude.ai kan læse alt uden auth.
 
 ### Bookmark inden afrejse
 

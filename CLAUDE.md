@@ -12,7 +12,8 @@
 | **Supabase SQL Editor** (paste-and-run) | https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new |
 | **Supabase project ID** | `dxzexvudbxkidhydwylw` (region eu-west-1, name "AthenApp") |
 | **Vercel project name** | `athens-pub-golf-app` (Lukas's personal Hobby team) |
-| **GitHub repo** | `lukashoerup/athens-pub-golf` (private) |
+| **GitHub repo** | `lukashoerup/athens-pub-golf` (**public** — fetch docs directly) |
+| **Raw doc URLs** | `https://raw.githubusercontent.com/lukashoerup/athens-pub-golf/main/<file>` |
 | **Default branch** | `main` (auto-deploys to Vercel on push) |
 
 If you have **Supabase MCP** connected (tool name pattern `mcp__*__execute_sql`), run SQL directly against project `dxzexvudbxkidhydwylw`. If not, output ready-to-paste SQL that Lukas pastes into the SQL Editor on his phone.
