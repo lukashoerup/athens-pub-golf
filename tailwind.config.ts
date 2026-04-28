@@ -9,45 +9,47 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Surfaces — clean white with subtle blue tints
-        'bg-primary': '#F6FAFD',
-        'bg-card': '#FFFFFF',
-        'bg-elevated': '#E8F1FA',
-        'bg-hero': '#0D5EAF',          // Greek flag blue
-        'bg-hero-deep': '#073D7A',     // Deeper navy for layered contrast
+        // Surfaces — warm parchment / cream
+        'parchment': '#F2EBDD',          // primary background (warm cream)
+        'parchment-light': '#F8F2E5',     // cards, slightly lighter
+        'parchment-dark': '#ECE4D2',      // sections, slightly darker
+        'ink': '#1A2438',                // deep navy ink (text, CTAs)
+        'ink-deep': '#0F1722',            // darker navy for deep contrast
 
-        // Accents
-        'accent-primary': '#D4A24C',   // Ancient gold (highlights, buttons)
-        'accent-warm': '#A23F3F',      // Wine red (red-figure pottery)
-        'accent-olive': '#5C6B3C',     // Olive grove
-        'accent-marble': '#EFEAD9',    // Marble / parchment
-        'accent-blue': '#0D5EAF',      // Greek flag blue, for accents
+        // Antique gold accents
+        'gold': '#B89A60',                // muted antique gold
+        'gold-soft': '#D4BD85',           // lighter gold tint
 
-        // Score colors (kept for clarity but harmonized with palette)
-        'score-great': '#2D6A30',
-        'score-ok': '#B8893E',
-        'score-bad': '#A23F3F',
+        // Score / status colors
+        'olive': '#5C6B3C',               // good — under average
+        'wine': '#9B3F36',                // bad — over by a lot
 
-        // Text
-        'text-primary': '#0E2240',     // Deep navy ink
-        'text-secondary': '#3D4D6B',
-        'text-muted': '#7989A3',
-        'text-on-dark': '#F6FAFD',
+        // Ink hierarchy
+        'ink-secondary': '#4A5568',
+        'ink-muted': '#8B8579',           // warm tan-grey
+        'ink-faint': '#B5AC9A',           // very faint tan-grey for hints
 
-        // Borders
-        border: '#CDDAE8',
+        // Hairline rules
+        'rule': '#D8D2C5',                // hairline gray-tan
       },
       fontFamily: {
         serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
+      letterSpacing: {
+        widest: '0.18em',
+        ultra: '0.32em',
+      },
       boxShadow: {
-        card: '0 2px 8px rgba(13, 94, 175, 0.08)',
-        'card-lg': '0 6px 24px rgba(13, 94, 175, 0.14)',
+        none: 'none',
+        soft: '0 1px 0 rgba(26, 36, 56, 0.04)',
       },
       borderRadius: {
-        card: '16px',
+        none: '0',
+        DEFAULT: '2px',
+        md: '4px',
+        lg: '6px',
       },
     },
   },

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import type { Hole, Player, Score } from '@/lib/types'
-import GreekDivider from '@/components/GreekDivider'
+import { toRoman } from '@/lib/format'
+import MeanderRule from '@/components/decorations/MeanderRule'
 
 interface Props {
   hole: Hole
@@ -30,39 +31,33 @@ export default function DrinkPhase({ hole, scores, players, myScore, onDrinkResu
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="bg-bg-hero rounded-card p-5 text-center">
-        <p className="font-sans text-accent-primary text-base uppercase tracking-widest">
-          {hole.is_practice ? '★ Prøverunde' : `Hul ${hole.id}`} · {hole.name}
+    <div className="space-y-7">
+      <div className="text-center">
+        <p className="smallcaps">
+          {hole.name} · Stop {toRoman(hole.id)}
         </p>
-        <h2
-          className="font-serif font-bold text-text-on-dark mt-2"
-          style={{ fontSize: '28px' }}
-        >
-          Commitment-check
-        </h2>
+        <h2 className="display-lg mt-3">Æresspørgsmål</h2>
+        <MeanderRule width={140} className="mx-auto mt-5" />
       </div>
 
-      {/* My commitment */}
       {myScore && (
-        <div className="card text-center">
-          <p className="font-sans text-text-secondary text-base">Du committed</p>
-          <div className="w-28 h-28 rounded-full border-4 border-accent-primary mx-auto flex items-center justify-center my-4">
-            <span
-              className="font-mono font-bold text-text-primary"
-              style={{ fontSize: '52px', lineHeight: 1 }}
-            >
-              {myScore.committed_sips}
-            </span>
-          </div>
-          <p className="font-sans font-semibold text-text-primary text-xl">
-            Drak du din drink på {myScore.committed_sips} slurke?
+        <div className="text-center field-card py-8">
+          <p className="smallcaps mb-3">Du committed</p>
+          <p
+            className="font-serif text-ink leading-none"
+            style={{ fontSize: '5rem', fontWeight: 500 }}
+          >
+            {myScore.committed_sips}
+          </p>
+          <p className="font-serif italic text-ink-muted text-base mt-3">slurke</p>
+
+          <div className="gold-rule mt-5" />
+          <p className="font-serif text-ink text-lg mt-3 leading-tight">
+            Drak du den på {myScore.committed_sips}?
           </p>
         </div>
       )}
 
-      {/* Answer buttons or status */}
       {!hasAnswered ? (
         <div className="space-y-3">
           {!confirmFail ? (
@@ -72,79 +67,83 @@ export default function DrinkPhase({ hole, scores, players, myScore, onDrinkResu
                 disabled={submitting}
                 className="btn-success"
               >
-                ✅ Ja, klarede det!
+                Ja — Klarede det
               </button>
               <button
                 onClick={() => setConfirmFail(true)}
                 disabled={submitting}
-                className="btn-danger"
+                className="btn-ghost"
               >
-                ❌ Nej, fejlede (+3)
+                Nej — Fejlede (+III)
               </button>
             </>
           ) : (
-            <div className="card space-y-4 border-t-2 border-score-bad">
-              <p className="font-sans font-semibold text-text-primary text-xl text-center">
-                Er du sikker?
+            <div className="border border-wine/40 bg-wine/5 px-5 py-6 space-y-4 text-center">
+              <p className="font-serif text-ink text-xl">Sikker?</p>
+              <p className="font-serif italic text-ink-secondary text-base">
+                +III strafpoint på dette stop.
               </p>
-              <p className="font-sans text-text-secondary text-base text-center">
-                Du får +3 strafpoint på dette hul.
-              </p>
-              <button
-                onClick={() => handleResult(false)}
-                disabled={submitting}
-                className="btn-danger"
-              >
-                Ja, jeg fejlede ❌
-              </button>
-              <button
-                onClick={() => setConfirmFail(false)}
-                disabled={submitting}
-                className="btn-secondary"
-              >
-                Tilbage
-              </button>
+              <div className="space-y-3 pt-1">
+                <button
+                  onClick={() => handleResult(false)}
+                  disabled={submitting}
+                  className="btn-danger"
+                >
+                  Ja, jeg fejlede
+                </button>
+                <button
+                  onClick={() => setConfirmFail(false)}
+                  disabled={submitting}
+                  className="btn-ghost"
+                >
+                  Tilbage
+                </button>
+              </div>
             </div>
           )}
         </div>
       ) : (
-        <div className="card text-center space-y-3">
+        <div className="text-center field-card py-6">
           {myScore?.completed === true ? (
             <>
-              <p className="text-4xl">✅</p>
-              <p className="font-sans font-semibold text-score-great text-xl">Klaret!</p>
+              <p className="smallcaps text-olive mb-2">Klaret</p>
+              <p className="font-serif italic text-ink text-lg">Æren intakt.</p>
             </>
           ) : (
             <>
-              <p className="text-4xl">❌</p>
-              <p className="font-sans font-semibold text-score-bad text-xl">+3 strafpoint</p>
+              <p className="smallcaps text-wine mb-2">Fejlede</p>
+              <p className="font-serif italic text-ink text-lg">+III strafpoint registreret.</p>
             </>
           )}
         </div>
       )}
 
-      {/* Status */}
-      <GreekDivider />
-      <div className="space-y-2">
+      {/* Status list */}
+      <div className="border-t border-rule">
         {players.map((player) => {
           const score = scores.find((s) => s.player_id === player.id)
           const done = score?.completed !== null && score?.completed !== undefined
+          const status = !done ? 'Venter' : score?.completed ? 'Klaret' : 'Fejlede'
+          const tone = !done ? 'text-ink-muted' : score?.completed ? 'text-olive' : 'text-wine'
           return (
             <div
               key={player.id}
-              className="flex items-center justify-between py-2 px-4 rounded-xl bg-bg-elevated"
+              className="flex items-center justify-between py-3 border-b border-rule"
             >
-              <p className="font-sans text-text-primary text-lg">{player.name}</p>
-              <span className="text-xl">
-                {!done ? '⏳' : score?.completed ? '✅' : '❌'}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-ink-muted text-xs w-6" style={{ letterSpacing: '0.08em' }}>
+                  {toRoman(player.display_order)}
+                </span>
+                <span className="font-serif text-ink text-lg">{player.name}</span>
+              </div>
+              <span className={`smallcaps ${tone}`}>{status}</span>
             </div>
           )
         })}
       </div>
 
-      <p className="text-center font-sans text-text-muted text-base">
-        {confirmedCount} / {players.length} har svaret
+      <p className="text-center smallcaps">
+        {confirmedCount} af {players.length} har svaret
       </p>
     </div>
   )

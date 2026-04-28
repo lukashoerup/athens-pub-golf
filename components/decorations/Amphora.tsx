@@ -4,46 +4,37 @@ interface Props {
   className?: string
 }
 
-export default function Amphora({ size = 32, color = '#0D5EAF', className = '' }: Props) {
+/** Refined line-drawn amphora — used as inline decoration */
+export default function Amphora({ size = 24, color = '#1A2438', className = '' }: Props) {
   return (
     <svg
       width={size}
-      height={size}
-      viewBox="0 0 40 56"
+      height={(size * 1.4) | 0}
+      viewBox="0 0 24 34"
       fill="none"
+      stroke={color}
+      strokeWidth="1.1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       aria-hidden
     >
-      {/* Mouth/lip */}
-      <path d="M14 4 Q14 2 16 2 H24 Q26 2 26 4 V6 H14 Z" fill={color} />
+      {/* Mouth */}
+      <path d="M9 2 H15 V4 H9 Z" />
       {/* Neck */}
-      <path d="M16 6 H24 V12 H16 Z" fill={color} opacity="0.92" />
-      {/* Shoulders + body (the bulbous part) */}
-      <path
-        d="M16 12 Q6 16 6 28 Q6 42 14 48 H26 Q34 42 34 28 Q34 16 24 12 Z"
-        fill={color}
-      />
+      <path d="M10 4 V8" />
+      <path d="M14 4 V8" />
+      {/* Body — rounded urn */}
+      <path d="M10 8 Q 3 11, 3 18 Q 3 25, 8 28 H16 Q 21 25, 21 18 Q 21 11, 14 8" />
       {/* Foot */}
-      <path d="M16 48 H24 V52 Q20 56 20 56 Q20 56 16 52 Z" fill={color} opacity="0.95" />
-      {/* Handles (left and right) */}
-      <path
-        d="M14 12 Q4 14 4 22 Q4 28 8 28"
-        stroke={color}
-        strokeWidth="2.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d="M26 12 Q36 14 36 22 Q36 28 32 28"
-        stroke={color}
-        strokeWidth="2.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* Decorative band — meander suggestion */}
-      <rect x="10" y="22" width="20" height="2" fill="#FFFFFF" opacity="0.4" />
-      <rect x="10" y="32" width="20" height="2" fill="#FFFFFF" opacity="0.4" />
+      <path d="M9 28 V31 H15 V28" />
+      {/* Handles */}
+      <path d="M10 8 Q 5 9, 5 13" />
+      <path d="M14 8 Q 19 9, 19 13" />
+      {/* Decorative band */}
+      <line x1="6" y1="16" x2="18" y2="16" strokeWidth="0.5" opacity="0.5" />
+      <line x1="6" y1="20" x2="18" y2="20" strokeWidth="0.5" opacity="0.5" />
     </svg>
   )
 }

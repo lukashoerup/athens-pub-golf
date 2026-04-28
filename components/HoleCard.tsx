@@ -1,61 +1,77 @@
 import type { Hole } from '@/lib/types'
-import Column from './decorations/Column'
 
 interface Props {
   hole: Hole
   showMapLink?: boolean
 }
 
+/**
+ * Map of hole id → district label (small caps section header)
+ * and approximate coordinates (for that classical-atlas feel).
+ */
+const HOLE_META: Record<number, { district: string; coords: string }> = {
+  1: { district: 'Koukaki → Veikou', coords: '37.96°N · 23.72°Ø' },
+  2: { district: 'Koukaki', coords: '37.97°N · 23.72°Ø' },
+  3: { district: 'Syntagma', coords: '37.97°N · 23.73°Ø' },
+  4: { district: 'Kolokotroni', coords: '37.97°N · 23.73°Ø' },
+  5: { district: 'Agia Irini', coords: '37.97°N · 23.72°Ø' },
+  6: { district: 'Areopagos', coords: '37.97°N · 23.72°Ø' },
+  7: { district: 'Psiri', coords: '37.97°N · 23.72°Ø' },
+  8: { district: 'Psiri · Iroon', coords: '37.97°N · 23.72°Ø' },
+  9: { district: 'Psiri', coords: '37.97°N · 23.72°Ø' },
+  10: { district: 'Kolokotroni', coords: '37.97°N · 23.73°Ø' },
+  11: { district: 'Syntagma', coords: '37.97°N · 23.73°Ø' },
+  12: { district: 'Psiri', coords: '37.97°N · 23.72°Ø' },
+}
+
 export default function HoleCard({ hole, showMapLink = true }: Props) {
+  const meta = HOLE_META[hole.id] ?? { district: hole.address, coords: '' }
+
   return (
-    <div className="card space-y-4 relative overflow-hidden">
-      {/* Decorative columns flanking the hole */}
-      <div className="absolute -top-1 -left-1 opacity-15 pointer-events-none">
-        <Column height={80} color="#0D5EAF" />
-      </div>
-      <div className="absolute -top-1 -right-1 opacity-15 pointer-events-none">
-        <Column height={80} color="#0D5EAF" />
-      </div>
-
-      {/* Hole number + type */}
-      <div className="flex items-start justify-between relative">
-        <div className="pl-6">
-          <p className="font-sans text-text-muted text-base uppercase tracking-widest">
-            {hole.is_practice ? '★ PRØVERUNDE' : `Hul ${hole.id} / 12`}
-          </p>
-          <h2
-            className="font-serif font-bold text-text-primary leading-tight"
-            style={{ fontSize: '28px' }}
-          >
-            {hole.name}
-          </h2>
-          <p className="font-sans text-text-secondary text-base mt-0.5">{hole.address}</p>
-        </div>
-        <span className="text-3xl pr-2">{hole.drink_emoji}</span>
+    <article className="space-y-5">
+      {/* District + coordinates row */}
+      <div className="flex items-baseline justify-between">
+        <span className="smallcaps">{meta.district}</span>
+        {meta.coords && (
+          <span className="font-mono text-ink-muted text-xs" style={{ letterSpacing: '0.08em' }}>
+            {meta.coords}
+          </span>
+        )}
       </div>
 
-      {/* Drink info */}
-      <div className="flex items-center gap-4 py-3 px-4 bg-bg-elevated rounded-xl border border-border">
-        <div className="w-1 h-10 rounded-full bg-accent-primary flex-shrink-0" />
-        <div>
-          <p className="font-sans font-semibold text-text-primary text-xl">{hole.drink}</p>
-          <p className="font-sans text-text-muted text-base">
-            {hole.stop_type} · Max {hole.max_sips} slurke
-          </p>
-        </div>
-      </div>
+      {/* Stop name */}
+      <h2 className="display-lg">{hole.name}</h2>
 
-      {/* Fun fact */}
-      <p className="font-sans text-text-secondary text-base leading-relaxed italic border-l-2 border-accent-primary pl-3">
-        {hole.fun_fact}
+      {/* Address as italic subtitle */}
+      <p className="font-serif italic text-ink-secondary text-lg -mt-2">
+        {hole.address}
       </p>
+
+      {/* Gold rule */}
+      <div className="w-12 h-px bg-gold" />
+
+      {/* Fun fact as field-note quote */}
+      <p className="field-quote">
+        &ldquo;{hole.fun_fact}&rdquo;
+      </p>
+      <p className="smallcaps">— Feltnote · Stop {romanShort(hole.id)}</p>
 
       {/* Maps link */}
       {showMapLink && (
-        <a href={hole.maps_url} target="_blank" rel="noopener noreferrer" className="maps-btn">
+        <a
+          href={hole.maps_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 font-sans text-ink underline underline-offset-4 decoration-gold decoration-1 hover:decoration-2 text-base"
+        >
           📍 Åbn i Google Maps
         </a>
       )}
-    </div>
+    </article>
   )
+}
+
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+function romanShort(n: number) {
+  return ROMAN[n - 1] ?? String(n)
 }

@@ -3,6 +3,7 @@
 import type { Player, Score, Hole } from '@/lib/types'
 import { computeLeaderboard } from '@/lib/scoring'
 import { HOLES } from '@/data/holes'
+import { toRoman } from '@/lib/format'
 
 interface Props {
   players: Player[]
@@ -11,91 +12,68 @@ interface Props {
   onClose: () => void
 }
 
-const MEDALS = ['🥇', '🥈', '🥉']
-const MEDAL_BG = ['bg-amber-50 border-amber-300', 'bg-slate-50 border-slate-300', 'bg-orange-50 border-orange-300']
-
 export default function Leaderboard({ players, scores, onClose }: Props) {
   const board = computeLeaderboard(players, scores, HOLES)
-  const completedHoles = HOLES.filter(
-    (h) => !h.is_practice && scores.some((s) => s.hole_id === h.id && s.committed_sips !== null)
-  ).length
+  const playedStops = new Set(
+    scores.filter((s) => s.committed_sips != null && !HOLES.find((h) => h.id === s.hole_id)?.is_practice).map((s) => s.hole_id)
+  ).size
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
-      {/* Backdrop */}
-      <button className="absolute inset-0 bg-black/60" onClick={onClose} aria-label="Luk" />
+      <button className="absolute inset-0 bg-ink/50 backdrop-blur-sm" onClick={onClose} aria-label="Luk" />
 
-      {/* Panel */}
-      <div className="relative mt-auto w-full max-w-md mx-auto bg-bg-primary rounded-t-3xl shadow-card-lg max-h-[85vh] flex flex-col">
-        {/* Handle */}
-        <div className="flex-shrink-0 pt-3 pb-1 flex justify-center">
-          <div className="w-10 h-1 rounded-full bg-border" />
+      <div className="relative mt-auto w-full max-w-md mx-auto bg-parchment max-h-[85vh] flex flex-col">
+        {/* Drag handle */}
+        <div className="flex-shrink-0 pt-3 pb-2 flex justify-center">
+          <div className="w-10 h-0.5 bg-rule" />
         </div>
 
         {/* Header */}
-        <div className="flex-shrink-0 px-5 py-3 flex items-center justify-between border-b border-border">
-          <h2 className="font-serif font-bold text-text-primary" style={{ fontSize: '24px' }}>
-            🏆 Leaderboard
-          </h2>
-          <div className="flex items-center gap-3">
-            <span className="font-sans text-text-muted text-base">
-              {completedHoles}/11 huller
-            </span>
-            <button
-              onClick={onClose}
-              className="w-9 h-9 rounded-full bg-bg-elevated flex items-center justify-center text-text-secondary font-sans text-lg"
-            >
-              ✕
-            </button>
+        <div className="flex-shrink-0 px-6 py-3 flex items-center justify-between border-b border-rule">
+          <div>
+            <p className="smallcaps">Stilling</p>
+            <p className="font-serif text-ink text-xl mt-0.5">Efter Stop {toRoman(playedStops)}</p>
           </div>
+          <button
+            onClick={onClose}
+            className="font-mono text-ink-muted text-sm w-9 h-9 flex items-center justify-center"
+            aria-label="Luk"
+          >
+            ✕
+          </button>
         </div>
 
         {/* List */}
-        <div className="overflow-y-auto flex-1 px-4 py-4 space-y-3">
+        <div className="overflow-y-auto flex-1 px-6 py-2">
           {board.map((entry, i) => (
             <div
               key={entry.player.id}
-              className={`rounded-xl border p-4 ${i < 3 ? MEDAL_BG[i] : 'bg-bg-card border-border'}`}
+              className="flex items-center justify-between py-4 border-b border-rule"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{MEDALS[i] ?? `${i + 1}.`}</span>
-                  <div>
-                    <p className="font-sans font-semibold text-text-primary text-xl">
-                      {entry.player.name}
-                    </p>
-                    <div className="flex gap-3 mt-0.5">
-                      {entry.penaltyShots > 0 && (
-                        <span className="font-sans text-text-muted text-base">
-                          🥃 ×{entry.penaltyShots}
-                        </span>
-                      )}
-                      {entry.commitmentFails > 0 && (
-                        <span className="font-sans text-score-bad text-base">
-                          ❌ ×{entry.commitmentFails}
-                        </span>
-                      )}
-                      {entry.spotOns > 0 && (
-                        <span className="font-sans text-score-great text-base">
-                          🎯 ×{entry.spotOns}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <span
-                  className="font-mono font-bold text-text-primary"
-                  style={{ fontSize: '28px' }}
-                >
-                  {entry.total}
+              <div className="flex items-center gap-4">
+                <span className="font-mono text-ink-muted text-xs w-6" style={{ letterSpacing: '0.08em' }}>
+                  {toRoman(i + 1)}
                 </span>
+                <div>
+                  <p className="font-serif text-ink text-lg leading-tight">{entry.player.name}</p>
+                  <p className="font-mono text-ink-muted mt-1" style={{ fontSize: '0.7rem', letterSpacing: '0.08em' }}>
+                    {entry.spotOns > 0 && `${entry.spotOns} spot-on`}
+                    {entry.spotOns > 0 && entry.commitmentFails > 0 && ' · '}
+                    {entry.commitmentFails > 0 && `${entry.commitmentFails} fejl`}
+                    {(entry.spotOns > 0 || entry.commitmentFails > 0) && entry.penaltyShots > 0 && ' · '}
+                    {entry.penaltyShots > 0 && `${entry.penaltyShots} shots`}
+                  </p>
+                </div>
               </div>
+              <span className="font-serif text-ink" style={{ fontSize: '1.6rem', fontWeight: 500 }}>
+                {entry.total}
+              </span>
             </div>
           ))}
 
           {board.every((e) => e.total === 0) && (
-            <p className="text-center text-text-muted font-sans text-base py-8">
-              Ingen scores endnu — spil et hul!
+            <p className="text-center font-serif italic text-ink-muted text-base py-10">
+              Ingen scores endnu — spil et stop.
             </p>
           )}
         </div>

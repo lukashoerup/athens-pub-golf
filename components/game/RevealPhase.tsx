@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import type { Hole, Player, Score } from '@/lib/types'
 import { calculateGroupAverage } from '@/lib/scoring'
-import GreekDivider from '@/components/GreekDivider'
+import { toRoman } from '@/lib/format'
+import MeanderRule from '@/components/decorations/MeanderRule'
 
 interface Props {
   hole: Hole
@@ -13,152 +14,134 @@ interface Props {
   onRevealComplete: () => Promise<void>
 }
 
-export default function RevealPhase({ hole, scores, players, myScore, onRevealComplete }: Props) {
-  const [revealed, setRevealed] = useState<boolean[]>([])
-  const [showAverage, setShowAverage] = useState(false)
+interface RevealedPlayer {
+  player: Player
+  score: Score | undefined
+  sips: number
+  distance: number
+  position: number // rank by lowest distance penalty
+}
+
+function distanceLabel(sips: number, avg: number): { text: string; tone: 'good' | 'neutral' | 'bad' } {
+  const diff = +(sips - avg).toFixed(1)
+  if (Math.abs(diff) <= 0.5) return { text: 'Spot on', tone: 'good' }
+  if (diff < 0) return { text: `${diff.toFixed(1)} under`, tone: Math.abs(diff) <= 1.0 ? 'good' : 'neutral' }
+  return { text: `+${diff.toFixed(1)} over`, tone: diff <= 1.0 ? 'neutral' : 'bad' }
+}
+
+export default function RevealPhase({ hole, scores, players, onRevealComplete }: Props) {
+  const [revealed, setRevealed] = useState(false)
   const [advancing, setAdvancing] = useState(false)
 
-  const committedScores = scores.filter((s) => s.committed_sips != null)
-  const allSips = committedScores.map((s) => s.committed_sips as number)
-  const average = calculateGroupAverage(allSips)
+  const committed = scores.filter((s) => s.committed_sips != null)
+  const allSips = committed.map((s) => s.committed_sips as number)
+  const avg = calculateGroupAverage(allSips)
 
-  // Staggered reveal animation
+  const revealedPlayers: RevealedPlayer[] = players.map((p) => {
+    const score = committed.find((s) => s.player_id === p.id)
+    const sips = (score?.committed_sips as number) ?? 0
+    return { player: p, score, sips, distance: Math.abs(sips - avg), position: 0 }
+  })
+
+  // Position by closest-to-avg (with tiebreak: lower committed_sips wins for the "leader" feel)
+  const sorted = [...revealedPlayers].sort(
+    (a, b) => a.distance - b.distance || a.sips - b.sips
+  )
+  sorted.forEach((p, i) => (p.position = i + 1))
+
   useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = []
-    players.forEach((_, i) => {
-      timers.push(
-        setTimeout(() => {
-          setRevealed((prev) => {
-            const next = [...prev]
-            next[i] = true
-            return next
-          })
-        }, 300 + i * 200)
-      )
-    })
-    timers.push(setTimeout(() => setShowAverage(true), 300 + players.length * 200 + 300))
-    return () => timers.forEach(clearTimeout)
-  }, [players.length])
+    const t = setTimeout(() => setRevealed(true), 200)
+    return () => clearTimeout(t)
+  }, [])
 
   async function handleAdvance() {
     setAdvancing(true)
     await onRevealComplete()
   }
 
-  function penaltyShotReason(score: Score | undefined): string | null {
-    if (!score?.penalty_shot) return null
-    return score.penalty_shot_reason === '8' ? 'committed 8' : 'samme tal som sidst'
-  }
-
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="bg-bg-hero rounded-card p-5 text-center">
-        <p className="font-sans text-accent-primary text-base uppercase tracking-widest">
-          {hole.is_practice ? '★ Prøverunde' : `Hul ${hole.id}`}
+    <div className="space-y-7">
+      {/* Header eyebrow */}
+      <div className="text-center">
+        <p className="smallcaps">
+          {hole.name} · Max {toRoman(hole.max_sips)}
         </p>
-        <h2
-          className="font-serif font-bold text-text-on-dark mt-1"
-          style={{ fontSize: '28px' }}
-        >
-          🎯 REVEAL
+        <h2 className="display-lg mt-3">
+          Tallene,
+          <br />
+          omsider.
         </h2>
-        <p className="font-sans text-text-on-dark opacity-70 text-base mt-1">{hole.name}</p>
+        <MeanderRule width={140} className="mx-auto mt-5" />
       </div>
 
-      {/* Players reveal */}
-      <div className="card space-y-3">
-        <GreekDivider label="Alle valg" />
-
-        {players.map((player, i) => {
-          const score = committedScores.find((s) => s.player_id === player.id)
-          const isMe = player.id === myScore?.player_id
-          const penaltyReason = penaltyShotReason(score)
-
+      {/* Grid of player cards */}
+      <div className="grid grid-cols-2 gap-px bg-rule border border-rule">
+        {revealedPlayers.map((rp) => {
+          const isLeader = rp.position === 1 && !hole.is_practice
+          const label = distanceLabel(rp.sips, avg)
+          const numberColor =
+            label.tone === 'good' ? 'text-olive' : label.tone === 'bad' ? 'text-wine' : 'text-ink'
           return (
             <div
-              key={player.id}
-              className={`flex items-center justify-between py-3 px-4 rounded-xl transition-all ${
-                revealed[i] ? 'opacity-100 animate-fade-in-up' : 'opacity-0'
-              } ${isMe ? 'bg-accent-primary/10 border border-accent-primary/30' : 'bg-bg-elevated'}`}
-              style={{ animationDelay: `${i * 200}ms` }}
+              key={rp.player.id}
+              className={`bg-parchment-light p-4 transition-all duration-500 ${
+                revealed ? 'opacity-100' : 'opacity-0'
+              } ${isLeader ? 'border-l-2 border-l-gold' : ''}`}
             >
-              <div>
-                <p className="font-sans font-semibold text-text-primary text-xl">
-                  {player.name} {isMe && <span className="text-text-muted text-base">(dig)</span>}
-                </p>
-                {penaltyReason && (
-                  <p className="font-sans text-score-bad text-base">⚠️ Straf-shot ({penaltyReason})</p>
-                )}
+              <div className="flex items-baseline justify-between">
+                <span className="font-mono text-ink-muted text-xs" style={{ letterSpacing: '0.1em' }}>
+                  {toRoman(rp.player.display_order)}
+                </span>
+                {isLeader && <span className="smallcaps-gold">Leader</span>}
               </div>
-              <span
-                className="font-mono font-bold text-text-primary"
-                style={{ fontSize: '28px' }}
+              <p className="font-serif font-semibold text-ink text-lg mt-1.5">{rp.player.name}</p>
+              <p
+                className={`font-serif leading-none mt-2.5 ${numberColor}`}
+                style={{ fontSize: '3.2rem', fontWeight: 500 }}
               >
-                {revealed[i] ? (score?.committed_sips ?? '?') : '·'}
-              </span>
+                {revealed ? rp.sips : '·'}
+              </p>
+              <p className="smallcaps mt-2">{label.text}</p>
             </div>
           )
         })}
-
-        {/* Average */}
-        {showAverage && (
-          <div
-            className="flex items-center justify-between py-3 px-4 rounded-xl bg-accent-primary/20 border-2 border-accent-primary animate-pop-in"
-          >
-            <p className="font-sans font-semibold text-text-primary text-xl">
-              Gennemsnit
-            </p>
-            <span
-              className="font-mono font-bold text-accent-primary"
-              style={{ fontSize: '28px' }}
-            >
-              {average.toFixed(1)}
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Penalty shots summary */}
-      {committedScores.some((s) => s.penalty_shot) && (
-        <div className="rounded-xl border-2 border-score-bad bg-score-bad/10 p-4 space-y-2">
-          <p className="font-sans font-semibold text-score-bad text-lg">🥃 Straf-shots</p>
-          {committedScores
+      {/* Average + penalty shots */}
+      <div className="flex items-center justify-between border-t border-b border-rule py-3">
+        <span className="smallcaps">Gennemsnit</span>
+        <span className="font-mono text-ink text-lg font-semibold">{avg.toFixed(1)}</span>
+      </div>
+
+      {committed.some((s) => s.penalty_shot) && (
+        <div className="border-l-2 border-wine pl-4 py-2 space-y-1">
+          <p className="smallcaps text-wine">Straf-shots</p>
+          {committed
             .filter((s) => s.penalty_shot)
             .map((s) => {
               const player = players.find((p) => p.id === s.player_id)
               return (
-                <p key={s.id} className="font-sans text-text-primary text-base">
-                  {player?.name}:{' '}
+                <p key={s.id} className="font-serif italic text-ink text-base">
+                  {player?.name} —{' '}
                   {s.penalty_shot_reason === '8'
-                    ? 'Committed 8 — stop med at være kedelig!'
-                    : 'Samme tal som forrige runde!'}
+                    ? 'committed VIII'
+                    : 'samme tal som forrige'}
                 </p>
               )
             })}
-          <p className="font-sans text-text-secondary text-base">
-            Disse drikkes inden gruppen går videre.
-          </p>
         </div>
       )}
 
       {/* Drink instruction */}
-      <div className="bg-bg-elevated rounded-xl p-4 text-center">
-        <p className="font-sans font-semibold text-text-primary text-xl">
-          {hole.drink_emoji} DRIK NU!
-        </p>
-        <p className="font-sans text-text-secondary text-base mt-1">
+      <div className="text-center py-3">
+        <p className="smallcaps">Drik nu</p>
+        <p className="font-serif italic text-ink-secondary text-lg mt-1.5">
           Tøm din drink på dit committed antal slurke.
         </p>
       </div>
 
-      {/* Advance button */}
-      <button
-        onClick={handleAdvance}
-        disabled={!showAverage || advancing}
-        className="btn-primary"
-      >
-        {advancing ? 'Venter...' : 'Alle har set — fortsæt →'}
+      <button onClick={handleAdvance} disabled={advancing} className="btn-primary">
+        {advancing ? 'Venter...' : 'Fortsæt'}
       </button>
     </div>
   )

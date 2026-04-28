@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import type { Hole, Score } from '@/lib/types'
 import HoleCard from '@/components/HoleCard'
-import GreekDivider from '@/components/GreekDivider'
+import Amphora from '@/components/decorations/Amphora'
+import { toRoman } from '@/lib/format'
 
 interface Props {
   hole: Hole
@@ -33,113 +34,110 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <HoleCard hole={hole} />
 
       {hole.is_practice && (
-        <div className="rounded-xl border-2 border-accent-warm bg-accent-warm/10 p-4 text-center space-y-1">
-          <p className="font-sans font-semibold text-accent-warm text-lg">⚠️ PRØVERUNDE</p>
-          <p className="font-sans text-text-secondary text-base">
+        <div className="border border-gold/50 bg-gold/5 px-5 py-4">
+          <p className="smallcaps-gold mb-1">Prøverunde</p>
+          <p className="font-serif italic text-ink-secondary text-base leading-snug">
             Point tæller ikke. Gennemgå reglerne mens I går.
           </p>
         </div>
       )}
 
       {!hasCommitted ? (
-        <div className="card">
-          <GreekDivider label="Commit dig" />
-
-          <p className="font-sans text-text-secondary text-center text-lg mb-6">
-            Hvor mange slurke tømmer du din drink på?
-          </p>
+        <section className="space-y-6">
+          {/* Max sips reference card */}
+          <div className="field-card flex items-center justify-between">
+            <div>
+              <p className="smallcaps mb-0.5">Max</p>
+              <p className="font-serif font-medium text-ink" style={{ fontSize: '2rem', lineHeight: 1 }}>
+                {toRoman(hole.max_sips)}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: Math.min(hole.max_sips, 8) }).map((_, i) => (
+                <Amphora key={i} size={14} color="#1A2438" />
+              ))}
+            </div>
+          </div>
 
           {/* Stepper */}
-          <div className="flex items-center justify-center gap-5 mb-4">
-            <button
-              onClick={decrement}
-              disabled={sips <= 1}
-              aria-label="Færre slurke"
-              className="w-14 h-14 rounded-full bg-accent-warm text-white font-mono font-bold text-3xl flex items-center justify-center disabled:opacity-30 active:scale-90 transition-transform shadow-card"
-            >
-              −
-            </button>
-
-            <div className="w-32 h-32 rounded-full border-4 border-accent-blue flex items-center justify-center shadow-card animate-pulse-blue">
-              <span
-                className="font-mono font-bold text-text-primary select-none"
-                style={{ fontSize: '52px', lineHeight: 1 }}
-              >
-                {sips}
-              </span>
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <span className="smallcaps-ink">Dit tal</span>
+              {sips === 8 && (
+                <span className="smallcaps text-wine">Straf-shot venter</span>
+              )}
             </div>
 
-            <button
-              onClick={increment}
-              disabled={sips >= hole.max_sips}
-              aria-label="Flere slurke"
-              className="w-14 h-14 rounded-full bg-accent-warm text-white font-mono font-bold text-3xl flex items-center justify-center disabled:opacity-30 active:scale-90 transition-transform shadow-card"
-            >
-              +
-            </button>
-          </div>
+            <div className="flex items-stretch justify-between">
+              <button
+                onClick={decrement}
+                disabled={sips <= 1}
+                aria-label="Færre slurke"
+                className="stepper-btn"
+              >
+                −
+              </button>
+              <div className="flex-1 flex items-center justify-center bg-parchment-light border-y border-rule">
+                <span
+                  className="font-serif text-ink select-none leading-none"
+                  style={{ fontSize: '4.2rem', fontWeight: 500 }}
+                >
+                  {sips}
+                </span>
+              </div>
+              <button
+                onClick={increment}
+                disabled={sips >= hole.max_sips}
+                aria-label="Flere slurke"
+                className="stepper-btn"
+              >
+                +
+              </button>
+            </div>
 
-          <p className="text-center font-sans text-text-muted text-base mb-6">
-            Max {hole.max_sips} slurke
-          </p>
-
-          {sips === 8 && (
-            <p className="text-center font-sans text-score-bad text-base mb-4">
-              ⚠️ 8 slurke = automatisk straf-shot!
+            <p className="font-serif italic text-ink-muted text-center text-base pt-1">
+              Antal slurke til at tømme drinken.
             </p>
-          )}
+          </div>
 
           <button onClick={handleLockIn} disabled={submitting} className="btn-primary">
-            {submitting ? (
-              <span className="flex items-center gap-2">
-                <span className="w-5 h-5 border-2 border-text-primary border-t-transparent rounded-full animate-spin" />
-                Sender...
-              </span>
-            ) : (
-              '🔒 Lock In'
-            )}
+            {submitting ? 'Sender...' : 'Lås Ind'}
           </button>
-        </div>
+        </section>
       ) : (
-        <div className="card text-center space-y-4">
-          {/* Already committed display */}
-          <div className="w-24 h-24 rounded-full border-4 border-accent-olive mx-auto flex items-center justify-center">
-            <span
-              className="font-mono font-bold text-text-primary"
-              style={{ fontSize: '40px', lineHeight: 1 }}
+        <section className="space-y-6">
+          {/* Confirmation */}
+          <div className="field-card text-center py-8">
+            <p className="smallcaps mb-3">Du committed</p>
+            <p
+              className="font-serif text-ink leading-none"
+              style={{ fontSize: '5rem', fontWeight: 500 }}
             >
               {myScore!.committed_sips}
-            </span>
-          </div>
-
-          <div>
-            <p className="font-sans font-semibold text-accent-olive text-xl">✅ Du har committed</p>
-            <p className="font-sans text-text-muted text-base mt-1">
+            </p>
+            <p className="font-serif italic text-ink-muted text-base mt-3">
               {myScore!.committed_sips} slurke
             </p>
             {myScore!.penalty_shot && (
-              <p className="font-sans text-score-bad text-base mt-2 font-semibold">
-                ⚠️ Straf-shot venter på dig!
-                {myScore!.penalty_shot_reason === '8'
-                  ? ' (du committed 8)'
-                  : ' (samme tal som forrige)'}
+              <p className="smallcaps text-wine mt-4">
+                ⚠ Straf-shot —{' '}
+                {myScore!.penalty_shot_reason === '8' ? 'committed VIII' : 'samme tal som forrige'}
               </p>
             )}
           </div>
 
-          <GreekDivider />
-
-          <div className="bg-bg-elevated rounded-xl py-4 px-5">
-            <p className="font-sans text-text-secondary text-lg font-semibold">
-              ⏳ {committedCount} / {totalPlayers} har committed
+          {/* Waiting status */}
+          <div className="text-center">
+            <p className="smallcaps">Venter på de andre</p>
+            <p className="font-serif text-ink mt-2" style={{ fontSize: '1.4rem' }}>
+              {committedCount} <span className="text-ink-muted">af</span> {totalPlayers}
             </p>
-            <p className="font-sans text-text-muted text-base mt-1">Venter på de andre...</p>
           </div>
-        </div>
+        </section>
       )}
     </div>
   )

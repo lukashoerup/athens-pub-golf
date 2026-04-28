@@ -4,17 +4,17 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { Player } from '@/lib/types'
-import GreekTemple from '@/components/decorations/GreekTemple'
-import GreekDivider from '@/components/GreekDivider'
+import { toRoman, formatDateHeader } from '@/lib/format'
+import DoricColumn from '@/components/decorations/DoricColumn'
 
 const RULES = [
   'Alle drikker den SAMME drink. Alle SKAL tømme den.',
-  'Commit hemmeligt: vælg antal slurke INDEN du drikker.',
+  'Vælg hemmeligt antal slurke INDEN du drikker.',
   'Hulscore = committed slurke + afstandsstraf fra gruppens gennemsnit.',
   'Afstandsstraf: ±0.5 = +0, ±1.0 = +1, ±1.5 = +2, ±2.0 = +3, 2.0+ = +4.',
   'Drukker du IKKE på dit committed tal → +3 strafpoint.',
-  'Committer du 8 eller samme tal som forrige hul → straf-shot (ingen point).',
-  'Laveste totalscore efter 12 huller vinder. Hul 1 er prøverunde.',
+  'Committer du 8 eller samme tal som forrige hul → straf-shot.',
+  'Laveste totalscore efter XII stop vinder. Stop I er prøverunde.',
 ]
 
 export default function PlayerSelectPage() {
@@ -23,6 +23,8 @@ export default function PlayerSelectPage() {
   const [loading, setLoading] = useState(true)
   const [selecting, setSelecting] = useState<string | null>(null)
   const [rulesOpen, setRulesOpen] = useState(false)
+
+  const { day, date } = formatDateHeader()
 
   useEffect(() => {
     supabase
@@ -42,95 +44,80 @@ export default function PlayerSelectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-hero flex flex-col">
-      {/* Hero header with Greek temple */}
-      <div className="flex-shrink-0 pt-10 pb-6 px-6 text-center relative">
-        {/* Subtle marble light overlay */}
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle at 30% 20%, rgba(255,255,255,0.15) 0%, transparent 60%), radial-gradient(circle at 70% 80%, rgba(212,162,76,0.14) 0%, transparent 50%)',
-          }}
-        />
+    <div className="min-h-screen bg-parchment flex flex-col">
+      {/* Header masthead */}
+      <div className="px-6 pt-12 pb-8 text-center">
+        <DoricColumn height={180} color="#1A2438" strokeWidth={1.0} className="mx-auto" />
 
-        <div className="relative">
-          <GreekTemple size={160} color="#D4A24C" className="mx-auto" />
+        <h1 className="display-xl mt-7 leading-none">Athens</h1>
+        <p className="display-italic mt-2" style={{ fontSize: '2.0rem' }}>
+          Pub Golf
+        </p>
 
-          <h1
-            className="text-text-on-dark font-serif font-bold mt-5"
-            style={{ fontSize: '40px', letterSpacing: '0.04em', lineHeight: 1.05 }}
-          >
-            ATHENS
-            <br />
-            PUB GOLF
-          </h1>
+        <div className="gold-rule" />
 
-          <p className="text-accent-primary font-mono font-bold text-xl mt-2 tracking-widest">⛳</p>
-
-          {/* Greek meander decoration in gold */}
-          <div className="greek-meander-gold mt-4 mx-auto max-w-xs" />
-
-          <p className="text-text-on-dark font-sans text-base mt-3 opacity-75 italic">
-            12 huller · 6 spillere · 1 dag
-          </p>
+        <div className="smallcaps mt-4">
+          {day} · XII STOPS
+        </div>
+        <div className="font-mono text-ink-muted mt-1.5" style={{ fontSize: '0.78rem', letterSpacing: '0.16em' }}>
+          {date}
         </div>
       </div>
 
-      {/* Player selection panel */}
-      <div className="flex-1 bg-bg-primary rounded-t-3xl px-5 pt-7 pb-6 shadow-card-lg">
-        <div className="text-center mb-5">
-          <p className="text-text-muted font-sans text-base uppercase tracking-widest">
-            Hvem er du?
-          </p>
-          <div className="greek-meander mt-2 mx-auto max-w-[140px]" />
-        </div>
-
+      {/* Player list */}
+      <div className="flex-1 px-6">
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="w-8 h-8 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
+          <div className="flex justify-center py-10">
+            <div className="w-6 h-6 border border-ink border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="border-t border-rule">
             {players.map((player) => (
               <button
                 key={player.id}
                 onClick={() => handleSelect(player)}
                 disabled={selecting !== null}
-                className="w-full h-14 rounded-xl bg-bg-card shadow-card border border-border text-text-primary font-sans font-semibold text-xl active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-60 hover:border-accent-blue"
+                className="w-full flex items-center justify-between py-4 border-b border-rule active:bg-parchment-dark transition-colors disabled:opacity-50 text-left"
               >
-                {selecting === player.id && (
-                  <div className="w-5 h-5 border-2 border-accent-blue border-t-transparent rounded-full animate-spin" />
-                )}
-                {player.name}
+                <div className="flex items-center gap-4">
+                  <span className="font-mono text-ink-muted text-base w-8" style={{ letterSpacing: '0.05em' }}>
+                    {toRoman(player.display_order)}
+                  </span>
+                  <span className="font-serif font-semibold text-ink text-xl">
+                    {player.name}
+                  </span>
+                </div>
+                <span className="smallcaps">
+                  {selecting === player.id ? 'Forbinder...' : 'Klar'}
+                </span>
               </button>
             ))}
           </div>
         )}
 
-        {/* Rules accordion */}
-        <div className="mt-8">
+        {/* Rules collapsible */}
+        <div className="mt-8 mb-6">
           <button
             onClick={() => setRulesOpen((o) => !o)}
-            className="w-full flex items-center justify-between py-3 px-4 rounded-xl bg-bg-elevated text-text-secondary font-sans font-semibold text-base"
+            className="w-full flex items-center justify-between py-3 border-t border-b border-rule"
           >
-            <span>📜 Athens Rules</span>
-            <span className="text-accent-blue text-lg">{rulesOpen ? '▲' : '▼'}</span>
+            <span className="smallcaps-ink">Athens Rules</span>
+            <span className="text-ink-muted text-sm">{rulesOpen ? '−' : '+'}</span>
           </button>
 
           {rulesOpen && (
-            <div className="mt-3 bg-bg-card rounded-xl shadow-card border-t-2 border-accent-warm p-4 space-y-3 animate-fade-in-up">
+            <div className="py-5 space-y-3">
               {RULES.map((rule, i) => (
                 <div key={i} className="flex gap-3">
-                  <span className="font-mono font-bold text-accent-blue text-base flex-shrink-0">
-                    {i + 1}.
+                  <span className="font-mono text-gold text-sm pt-0.5 w-6 flex-shrink-0">
+                    {toRoman(i + 1)}
                   </span>
-                  <p className="font-sans text-text-secondary text-base leading-snug">{rule}</p>
+                  <p className="font-sans text-ink-secondary text-base leading-snug">{rule}</p>
                 </div>
               ))}
-              <GreekDivider variant="gold" />
-              <p className="font-sans text-text-muted text-base italic text-center">
-                Hul 1 er prøverunde — point tæller ikke.
+              <div className="gold-rule mt-4" />
+              <p className="font-serif italic text-ink-muted text-base text-center pb-1">
+                Stop I er prøverunde — point tæller ikke.
               </p>
             </div>
           )}

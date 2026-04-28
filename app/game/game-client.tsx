@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import type { Player, Score, GameState } from '@/lib/types'
 import { HOLES } from '@/data/holes'
 import { checkPenaltyShot } from '@/lib/scoring'
+import { toRoman as romanize } from '@/lib/format'
 import CommitPhase from '@/components/game/CommitPhase'
 import RevealPhase from '@/components/game/RevealPhase'
 import DrinkPhase from '@/components/game/DrinkPhase'
@@ -186,19 +187,19 @@ export default function GamePage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-3 border-accent-primary border-t-transparent rounded-full animate-spin" />
-        <p className="font-sans text-text-secondary text-lg">Henter spildata...</p>
+      <div className="min-h-screen bg-parchment flex flex-col items-center justify-center gap-4">
+        <div className="w-6 h-6 border border-ink border-t-transparent rounded-full animate-spin" />
+        <p className="smallcaps">Henter spildata</p>
       </div>
     )
   }
 
   if (error || !gameState || !currentPlayer) {
     return (
-      <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center gap-4 px-6">
-        <p className="font-sans text-score-bad text-lg text-center">{error ?? 'Noget gik galt'}</p>
-        <button onClick={() => router.push('/')} className="btn-secondary w-auto px-6">
-          ← Tilbage
+      <div className="min-h-screen bg-parchment flex flex-col items-center justify-center gap-4 px-6">
+        <p className="font-serif italic text-wine text-lg text-center">{error ?? 'Noget gik galt'}</p>
+        <button onClick={() => router.push('/')} className="btn-ghost w-auto px-6">
+          Tilbage
         </button>
       </div>
     )
@@ -221,54 +222,37 @@ export default function GamePage() {
     )
   }
 
-  const phaseLabel: Record<string, string> = {
-    committing: 'Commit',
-    reveal: 'Reveal',
-    drinking: 'Drik',
-    scoring: 'Score',
-  }
-
   return (
-    <div className="min-h-screen bg-bg-primary">
-      {/* Sticky header */}
-      <header className="sticky top-0 z-40 bg-bg-hero border-b border-white/10 px-4 py-3">
-        <div className="max-w-md mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-accent-primary font-bold text-xl">
-              ⛳ {gameState.current_hole}/12
-            </span>
-            {currentHole.is_practice && (
-              <span className="text-xs bg-accent-warm text-text-on-dark px-2 py-0.5 rounded-full font-sans">
-                PRØVE
-              </span>
-            )}
-            <span className="text-xs bg-white/10 text-text-on-dark px-2 py-0.5 rounded-full font-sans">
-              {phaseLabel[gameState.phase] ?? gameState.phase}
-            </span>
+    <div className="min-h-screen bg-parchment">
+      {/* Sticky header — minimal, classical */}
+      <header className="sticky top-0 z-40 bg-parchment/95 backdrop-blur-sm border-b border-rule">
+        <div className="max-w-md mx-auto flex items-center justify-between px-5 py-3">
+          {canSwitchPlayer ? (
+            <button
+              onClick={handleSwitchPlayer}
+              className="font-mono text-ink-muted text-sm hover:text-ink"
+              aria-label="Skift spiller"
+            >
+              ‹
+            </button>
+          ) : (
+            <span className="w-3" />
+          )}
+
+          <div className="text-center">
+            <p className="smallcaps-ink">
+              Stop {romanize(gameState.current_hole)} <span className="text-gold">·</span> XII
+            </p>
           </div>
 
-          <div className="flex items-center gap-1">
-            {canSwitchPlayer && (
-              <button
-                onClick={handleSwitchPlayer}
-                className="text-text-on-dark text-base opacity-60 hover:opacity-100 px-2 py-1 font-sans"
-              >
-                ↩ {currentPlayer.name}
-              </button>
-            )}
-            {!canSwitchPlayer && (
-              <span className="text-text-on-dark text-base opacity-60 px-2 font-sans">
-                {currentPlayer.name}
-              </span>
-            )}
-            <button
-              onClick={() => setShowLeaderboard(true)}
-              className="w-10 h-10 flex items-center justify-center text-xl text-accent-primary rounded-full hover:bg-white/10"
-              aria-label="Vis leaderboard"
-            >
-              🏆
-            </button>
-          </div>
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            className="font-mono text-ink-muted text-xs hover:text-ink"
+            aria-label="Vis leaderboard"
+            style={{ letterSpacing: '0.08em' }}
+          >
+            {players.length} spillere
+          </button>
         </div>
       </header>
 
