@@ -155,14 +155,15 @@ export default function GamePage() {
       const prevSips = prevScore?.committed_sips ?? null
       const currentHoleData = holes.find((h) => h.id === gameState.current_hole)
       const maxSips = currentHoleData?.max_sips ?? 8
-      const { penalty, reason } = checkPenaltyShot(sips, maxSips, prevSips, gameState.current_hole)
+      const { reasons } = checkPenaltyShot(sips, maxSips, prevSips, gameState.current_hole)
 
       await supabase.from('scores').insert({
         player_id: currentPlayer.id,
         hole_id: gameState.current_hole,
         committed_sips: sips,
-        penalty_shot: penalty,
-        penalty_shot_reason: reason,
+        penalty_shot: reasons.length > 0,
+        penalty_shot_reason: reasons[0] ?? null, // primary reason for backward compat
+        penalty_shot_reasons: reasons,
       })
     },
     [currentPlayer, gameState, scores, holes]
@@ -310,16 +311,23 @@ export default function GamePage() {
 
       {/* Main content */}
       <main className="max-w-md mx-auto px-4 py-5 pb-10">
-        {gameState.phase === 'committing' && (
-          <CommitPhase
-            hole={currentHole}
-            myScore={myCurrentScore}
-            committedCount={currentHoleScores.filter((s) => s.committed_sips != null).length}
-            totalPlayers={TOTAL_PLAYERS}
-            currentPlayerName={currentPlayer.name}
-            onCommit={handleCommit}
-          />
-        )}
+        {gameState.phase === 'committing' && (() => {
+          const prevHoleId = sortedHoleIds[sortedHoleIds.indexOf(gameState.current_hole) - 1]
+          const myPrev = scores.find(
+            (s) => s.player_id === currentPlayer.id && s.hole_id === prevHoleId
+          )
+          return (
+            <CommitPhase
+              hole={currentHole}
+              myScore={myCurrentScore}
+              myPreviousSips={myPrev?.committed_sips ?? null}
+              committedCount={currentHoleScores.filter((s) => s.committed_sips != null).length}
+              totalPlayers={TOTAL_PLAYERS}
+              currentPlayerName={currentPlayer.name}
+              onCommit={handleCommit}
+            />
+          )
+        })()}
 
         {gameState.phase === 'reveal' && (
           <RevealPhase

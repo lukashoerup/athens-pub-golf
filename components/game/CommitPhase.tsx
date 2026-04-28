@@ -5,6 +5,7 @@ import type { Hole, Score } from '@/lib/types'
 import HoleCard from '@/components/HoleCard'
 import Amphora from '@/components/decorations/Amphora'
 import { toRoman } from '@/lib/format'
+import { checkPenaltyShot } from '@/lib/scoring'
 
 function penaltyShotLabel(reason: string | null, maxSips: number): string {
   switch (reason) {
@@ -24,18 +25,23 @@ function penaltyShotLabel(reason: string | null, maxSips: number): string {
 interface Props {
   hole: Hole
   myScore: Score | undefined
+  /** This player's committed sips on the previous hole — for live straf-shot preview */
+  myPreviousSips: number | null
   committedCount: number
   totalPlayers: number
   currentPlayerName: string
   onCommit: (sips: number) => Promise<void>
 }
 
-export default function CommitPhase({ hole, myScore, committedCount, totalPlayers, currentPlayerName, onCommit }: Props) {
+export default function CommitPhase({ hole, myScore, myPreviousSips, committedCount, totalPlayers, currentPlayerName, onCommit }: Props) {
   const defaultSips = Math.ceil(hole.max_sips / 2)
   const [sips, setSips] = useState(defaultSips)
   const [submitting, setSubmitting] = useState(false)
 
   const hasCommitted = myScore?.committed_sips != null
+
+  // Live preview of which penalty rules trigger for the currently selected number
+  const previewReasons = checkPenaltyShot(sips, hole.max_sips, myPreviousSips, hole.id).reasons
 
   const decrement = () => setSips((s) => Math.max(1, s - 1))
   const increment = () => setSips((s) => Math.min(hole.max_sips, s + 1))
@@ -83,8 +89,10 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
               <span className="smallcaps-ink">Dit tal</span>
-              {(sips === hole.max_sips || sips === 1) && (
-                <span className="smallcaps text-wine">Straf-shot venter</span>
+              {previewReasons.length > 0 && (
+                <span className="smallcaps text-wine">
+                  Straf-shot{previewReasons.length > 1 ? ` × ${previewReasons.length}` : ''}
+                </span>
               )}
             </div>
 
@@ -118,6 +126,22 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
             <p className="font-serif italic text-ink-muted text-center text-base pt-1">
               Antal slurke til at tømme drinken.
             </p>
+
+            {/* Live straf-shot preview — list each rule that would trigger */}
+            {previewReasons.length > 0 && (
+              <div className="border-l-2 border-wine pl-3 py-1.5 mt-2">
+                <p className="smallcaps text-wine mb-1">
+                  ⚠ {previewReasons.length === 1 ? '1 straf-shot' : `${previewReasons.length} straf-shots`}
+                </p>
+                <ul className="space-y-0.5">
+                  {previewReasons.map((r, i) => (
+                    <li key={i} className="font-sans text-ink-secondary text-sm leading-snug">
+                      — {penaltyShotLabel(r, hole.max_sips)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <button onClick={handleLockIn} disabled={submitting} className="btn-primary">
@@ -138,11 +162,25 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
             <p className="font-serif italic text-ink-muted text-base mt-3">
               {myScore!.committed_sips} slurke
             </p>
-            {myScore!.penalty_shot && (
-              <p className="smallcaps text-wine mt-4">
-                ⚠ Straf-shot — {penaltyShotLabel(myScore!.penalty_shot_reason, hole.max_sips)}
-              </p>
-            )}
+            {myScore!.penalty_shot && (() => {
+              const reasons = myScore!.penalty_shot_reasons && myScore!.penalty_shot_reasons.length > 0
+                ? myScore!.penalty_shot_reasons
+                : (myScore!.penalty_shot_reason ? [myScore!.penalty_shot_reason] : [])
+              return (
+                <div className="mt-4 border-l-2 border-wine pl-3 py-1 inline-block text-left">
+                  <p className="smallcaps text-wine mb-1">
+                    ⚠ {reasons.length === 1 ? 'Straf-shot' : `${reasons.length} straf-shots`}
+                  </p>
+                  <ul className="space-y-0.5">
+                    {reasons.map((r, i) => (
+                      <li key={i} className="font-sans text-ink-secondary text-sm leading-snug">
+                        — {penaltyShotLabel(r, hole.max_sips)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })()}
           </div>
 
           {/* Waiting status */}

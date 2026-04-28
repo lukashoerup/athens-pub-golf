@@ -155,6 +155,9 @@ export default function Rules({ compact = false }: Props) {
             </em>
           </li>
         </ul>
+        <p className="font-sans text-ink-secondary text-base leading-snug mt-3 pt-2 border-t border-rule">
+          <strong>Reglerne stables.</strong> Hvis du committer I to gange i streg, får du <strong>2 straf-shots</strong> — én for at vælge I, én for samme tal som sidst. Tilsvarende hvis du committer max-tallet to gange i streg.
+        </p>
       </section>
 
       {/* Section 7 — Late-game multiplier */}

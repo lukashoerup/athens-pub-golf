@@ -14,25 +14,27 @@ export function calculateDistancePenalty(committedSips: number, average: number)
   return 4
 }
 
+/**
+ * Returns ALL triggered penalty reasons. Each reason = one extra straf-shot.
+ * Multiple reasons can trigger at once (e.g. committing 1 twice in a row =
+ * ['min', 'same_as_last'] → 2 shots).
+ */
 export function checkPenaltyShot(
   committedSips: number,
   maxSips: number,
   previousSips: number | null,
   currentHoleId: number
-): { penalty: boolean; reason: string | null } {
+): { reasons: string[] } {
+  const reasons: string[] = []
   // Top extreme — committing the maximum (per-hole, e.g. 8 for beer, 3 for shot)
-  if (committedSips === maxSips) {
-    return { penalty: true, reason: 'max' }
-  }
+  if (committedSips === maxSips) reasons.push('max')
   // Bottom extreme — committing 1 (just nipping)
-  if (committedSips === 1) {
-    return { penalty: true, reason: 'min' }
-  }
+  if (committedSips === 1) reasons.push('min')
   // Same as previous hole's commit — only counts from hole 3 onward
   if (previousSips !== null && committedSips === previousSips && currentHoleId > 2) {
-    return { penalty: true, reason: 'same_as_last' }
+    reasons.push('same_as_last')
   }
-  return { penalty: false, reason: null }
+  return { reasons }
 }
 
 export function computeHoleScores(
@@ -98,7 +100,12 @@ export function computeLeaderboard(
 
         total += Math.round(rawTotal * multiplier)
 
-        if (myScore.penalty_shot) penaltyShots += 1
+        // Count total straf-shots (one per triggered reason; can be 2 per hole)
+        const reasonsArr = myScore.penalty_shot_reasons ?? []
+        const shotsThisHole = reasonsArr.length > 0
+          ? reasonsArr.length
+          : (myScore.penalty_shot ? 1 : 0) // legacy fallback
+        penaltyShots += shotsThisHole
         if (myScore.completed === false) commitmentFails += 1
         if (distancePenalty === 0) spotOns += 1
       }

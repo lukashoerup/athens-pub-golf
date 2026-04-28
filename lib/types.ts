@@ -40,7 +40,10 @@ export interface Score {
   committed_sips: number | null
   completed: boolean | null
   penalty_shot: boolean
+  /** Primary reason — kept for backward compat. Prefer penalty_shot_reasons. */
   penalty_shot_reason: string | null
+  /** All triggered penalty reasons (e.g. ['min', 'same_as_last'] = 2 shots) */
+  penalty_shot_reasons: string[]
   created_at: string
 }
 

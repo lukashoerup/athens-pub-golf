@@ -129,17 +129,34 @@ export default function RevealPhase({ hole, scores, players, onRevealComplete }:
       </div>
 
       {committed.some((s) => s.penalty_shot) && (
-        <div className="border-l-2 border-wine pl-4 py-2 space-y-1">
+        <div className="border-l-2 border-wine pl-4 py-2 space-y-1.5">
           <p className="smallcaps text-wine">Straf-shots</p>
           {committed
             .filter((s) => s.penalty_shot)
             .map((s) => {
               const player = players.find((p) => p.id === s.player_id)
+              const reasons = s.penalty_shot_reasons && s.penalty_shot_reasons.length > 0
+                ? s.penalty_shot_reasons
+                : (s.penalty_shot_reason ? [s.penalty_shot_reason] : [])
+              const shotCount = reasons.length || 1
               return (
-                <p key={s.id} className="font-serif italic text-ink text-base">
-                  {player?.name} —{' '}
-                  {penaltyReasonText(s.penalty_shot_reason, hole.max_sips)}
-                </p>
+                <div key={s.id}>
+                  <p className="font-serif italic text-ink text-base">
+                    {player?.name}
+                    {shotCount > 1 && (
+                      <span className="font-mono text-wine font-semibold ml-1.5">
+                        × {shotCount}
+                      </span>
+                    )}
+                  </p>
+                  <ul className="ml-3 mt-0.5 space-y-0.5">
+                    {reasons.map((r, i) => (
+                      <li key={i} className="font-sans text-ink-secondary text-sm">
+                        — {penaltyReasonText(r, hole.max_sips)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )
             })}
         </div>
