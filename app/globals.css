@@ -104,7 +104,7 @@
 
   /* Stepper square button (— / +) */
   .stepper-btn {
-    @apply w-16 h-16 border border-rule bg-parchment-light text-ink flex items-center justify-center text-2xl font-sans active:bg-parchment-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors;
+    @apply w-16 h-24 border border-rule bg-parchment-light text-ink flex items-center justify-center text-2xl font-sans active:bg-parchment-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors;
   }
 
   /* Card — minimal, hairline border, no shadow */

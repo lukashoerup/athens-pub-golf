@@ -81,10 +81,10 @@ export default function CommitPhase({ hole, myScore, committedCount, totalPlayer
               >
                 −
               </button>
-              <div className="flex-1 flex items-center justify-center bg-parchment-light border-y border-rule">
+              <div className="flex-1 flex items-center justify-center bg-parchment-light border-y border-rule h-24 pb-2">
                 <span
                   className="font-serif text-ink select-none leading-none"
-                  style={{ fontSize: '4.2rem', fontWeight: 500 }}
+                  style={{ fontSize: '3.8rem', fontWeight: 500 }}
                 >
                   {sips}
                 </span>
