@@ -1,77 +1,93 @@
 # Athens Pub Golf ⛳
 
-12 huller · 6 spillere · 1 dag i Athen
+12 stops · 6 spillere · 1 dag i Athen.
 
-## Setup
-
-### 1. Supabase
-
-1. Gå til [supabase.com](https://supabase.com) og opret et gratis projekt
-2. Gå til **SQL Editor** og kør hele `supabase/schema.sql`
-3. Gå til **Database → Replication** og aktivér realtime for `scores` og `game_state`
-4. Kopiér **Project URL** og **anon public key** fra **Settings → API**
-
-### 2. Opdater spillernavne
-
-Ret direkte i `supabase/schema.sql` under `SEED: Players`, eller kør i SQL Editor:
-
-```sql
-UPDATE players SET name = 'Rigtig Navn' WHERE name = 'Spiller 5';
-UPDATE players SET name = 'Andet Navn' WHERE name = 'Spiller 6';
-```
-
-### 3. Lokalt udviklingsmiljø
-
-```bash
-cp .env.local.example .env.local
-# Udfyld NEXT_PUBLIC_SUPABASE_URL og NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-npm install
-npm run dev
-```
-
-### 4. Deploy til Vercel
-
-1. Push til GitHub
-2. Opret projekt på [vercel.com](https://vercel.com) og connect til repo
-3. Tilføj environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. Deploy — del URL med gutterne
+Real-time multiplayer pub-golf med hemmelige commits, distance-baseret scoring, og kulturelle stops mellem barerne.
 
 ---
 
-## Admin (under turen)
+## ⚡ Quick Reference (alt det du måske skal bruge på mobilen)
 
-Bogmærk Supabase SQL Editor på din telefon:
-`https://supabase.com/dashboard/project/[DIT-PROJEKT-ID]/sql`
+| Hvad | URL / ID |
+|---|---|
+| **Live app** (deles med spillere) | https://athens-pub-golf-app-prod.vercel.app |
+| **Supabase SQL Editor** (paste-and-run) | https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new |
+| **Supabase project ID** | `dxzexvudbxkidhydwylw` |
+| **Vercel project** | `athens-pub-golf-app` (Hobby) |
+| **GitHub** | `lukashoerup/athens-pub-golf` (private) |
+| **Default branch** | `main` (auto-deploy til Vercel ved push) |
 
-Alle nyttige SQL-kommandoer er i bunden af `supabase/schema.sql`.
+**Spillere (6):** Nico, Kris, Misse, Lukas (host), Rasmus, Rode  
+**Stops (12):** se `docs/DATABASE.md` for den fulde rute
 
 ---
 
 ## Stack
 
-- **Frontend:** Next.js 15 (App Router)
-- **Database + Realtime:** Supabase (gratis tier)
-- **Styling:** Tailwind CSS
-- **Hosting:** Vercel (gratis tier)
+- **Frontend:** Next.js 15 (App Router) + Tailwind CSS
+- **Database + Realtime:** Supabase (4 tables: `players`, `holes`, `waypoints`, `scores`, `game_state`)
+- **Hosting:** Vercel (Hobby tier, auto-deploy fra GitHub)
+- **Auth:** Ingen — anon-key bruges, FK + UNIQUE constraints sikrer integritet
 
 ---
 
-## Under turen — fix ting via Claude
+## Under turen — fix ting via Claude på mobil
 
 Hvis noget går galt under turen og du har brug for at fikse DB'en fra mobilen:
 
-1. **Åbn Claude** (claude.ai på mobil eller computer) i en ny chat
-2. **Paste i hele indholdet af [`CLAUDE.md`](./CLAUDE.md)** som første besked, eller giv Claude link til repoet
+1. **Åbn Claude** ([claude.ai](https://claude.ai) på mobil eller computer) i en ny chat
+2. **Første besked**: *"Læs CLAUDE.md fra https://github.com/lukashoerup/athens-pub-golf/blob/main/CLAUDE.md og hjælp mig under en pub-golf-tur"*
+   - Hvis repoet er public (gør det evt. public før turen) kan claude.ai med GitHub-connector læse det direkte
+   - Hvis ikke: paste indholdet af `CLAUDE.md` ind manuelt
 3. **Beskriv problemet** på dansk: *"Misse trykkede ❌ ved en fejl på hul 6"*
-4. **Claude returnerer ready-to-paste SQL**
-5. **Åbn** [Supabase SQL Editor](https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new) → paste → Run
+4. **Claude returnerer ready-to-paste SQL** (eller eksekverer direkte hvis Supabase MCP er aktiv)
+5. **Åbn SQL Editor** (link ovenfor) → paste → Run
 
-Se [`docs/ADMIN.md`](./docs/ADMIN.md) for alle recipes direkte.
+Se `docs/ADMIN.md` for alle 13+ recipes direkte.
 
 ### Bookmark inden afrejse
-- 📋 Supabase SQL Editor: `https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new`
-- 🤖 [claude.ai](https://claude.ai) — log ind og opret en ny chat-tråd hvis nødvendigt
-- 🔗 Dette repo så Claude kan læse `CLAUDE.md`
+
+- 📋 **Supabase SQL Editor**: `https://supabase.com/dashboard/project/dxzexvudbxkidhydwylw/sql/new`
+- 🌐 **Live app**: `https://athens-pub-golf-app-prod.vercel.app`
+- 🤖 **claude.ai**: log ind på telefonen og opret en ny chat-tråd
+- 📁 **GitHub repo**: `https://github.com/lukashoerup/athens-pub-golf`
+
+---
+
+## Lokal udvikling
+
+```bash
+cp .env.local.example .env.local
+# Udfyld NEXT_PUBLIC_SUPABASE_URL og NEXT_PUBLIC_SUPABASE_ANON_KEY
+# Værdier ligger i Vercel project settings → Environment Variables
+npm install
+npm run dev
+```
+
+App'en kører på `localhost:3000`.
+
+---
+
+## Deploy
+
+Hver push til `main` auto-deploys til Vercel.
+
+**Commit author skal være `lukas@hoerup.dk`** — Vercel Hobby blocker deploys fra "external contributors" på private repos. Verificer med:
+```bash
+git config user.email
+# Skal returnere: lukas@hoerup.dk
+```
+
+Hvis du rebaser/ændrer commits og forfatter er forkert: `git filter-branch --env-filter 'GIT_AUTHOR_EMAIL="lukas@hoerup.dk" GIT_COMMITTER_EMAIL="lukas@hoerup.dk"' HEAD` derefter `git push --force-with-lease`.
+
+---
+
+## Dokumentation (read in order)
+
+| Fil | Indhold |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Entry-point primer for any Claude reading the repo |
+| [`docs/ADMIN.md`](docs/ADMIN.md) ⭐ | SQL recipes for typiske in-game fixes |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Schema reference + diagnostiske queries |
+| [`docs/GAME_RULES.md`](docs/GAME_RULES.md) | Scoring formula, phase flow, penalty rules |
+| [`supabase/schema.sql`](supabase/schema.sql) | Kanonisk DDL (kør for at recreate DB fra scratch) |

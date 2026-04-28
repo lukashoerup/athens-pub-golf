@@ -6,33 +6,38 @@ Reference for understanding *why* a score is what it is, and explaining mechanic
 
 ## The core game
 
-- **6 players, 12 holes** (hole 1 = practice, doesn't count)
+- **6 players, 12 stops** (stop 1 = practice walk, doesn't count)
 - All players drink the **same drink** at each stop
 - Each player **secretly commits** to a number of sips before drinking
 - After all commit, numbers are **revealed simultaneously**, group average is computed
-- Players are scored on **committed sips + distance penalty from the average**
+- Players are scored on **committed sips + distance penalty from the average**, then **multiplied by the stop's `score_multiplier`** (1.0 for most stops, 1.5/2.0/2.5 for the last three)
 
-**Lowest total after 12 holes wins** (like real golf).
+**Lowest total after stop XII wins** (like real golf).
 
 ---
 
 ## Scoring formula
 
 ```
-hole_score = committed_sips
-           + distance_penalty (based on |committed - group_avg|)
-           + commitment_penalty (3 if you failed to drink it, else 0)
+hole_total = ROUND( (committed_sips + distance_penalty + commitment_penalty) × score_multiplier )
 ```
 
 ### Distance penalty table
 
 | `|committed - average|` | Penalty |
 |---|---|
-| ≤ 0.5 | +0 |
+| ≤ 0.5 | +0 (spot on) |
 | > 0.5, ≤ 1.0 | +1 |
 | > 1.0, ≤ 1.5 | +2 |
 | > 1.5, ≤ 2.0 | +3 |
 | > 2.0 | +4 |
+
+### Commitment penalty
+
+| What you tap | Penalty |
+|---|---|
+| ✓ "Klarede det" | +0 |
+| ✗ "Fejlede" | **+3** |
 
 ### Strategic implication
 
@@ -40,78 +45,99 @@ hole_score = committed_sips
 - More sips = safer (close to crowd) but expensive base
 - The sweet spot is **just below average** — typically same total score as hitting the average exactly, but bolder
 
-### Example (group avg = 4.0)
+### Example (group avg = 4.0, no multiplier)
 
 | Committed | Base | Distance | Penalty | **Total** |
 |---|---|---|---|---|
-| 1 | 1 | 3.0 | +4 | 5 |
+| 1 | 1 | 3.0 | +4 | 5 + straf-shots! |
 | 2 | 2 | 2.0 | +3 | 5 |
 | 3 | 3 | 1.0 | +1 | **4** ← winner |
 | 4 | 4 | 0.0 | +0 | **4** ← winner |
 | 5 | 5 | 1.0 | +1 | 6 |
 | 6 | 6 | 2.0 | +3 | 9 |
-| 8 | 8 | 4.0 | +4 | 12 |
+| 8 | 8 | 4.0 | +4 | 12 + straf-shot! |
+
+---
+
+## Late-game score multiplier
+
+The last three stops have weighted scoring — late-game mistakes hurt more.
+
+| Stop | Multiplier | Example (raw 4 → final) |
+|---|---|---|
+| 10 (Beer Time) | × 1.5 | 4 → 6 |
+| 11 (Drupes) | × 2.0 | 4 → 8 |
+| 12 (BOO! Athens) | × 2.5 | 4 → 10 |
+
+Stored as `holes.score_multiplier` (NUMERIC). Default 1.0 for all other holes. Practice round (hole 1) ignores the multiplier since `is_practice = true` excludes it from the leaderboard regardless.
 
 ---
 
 ## Penalty shots (extra physical drinks, ZERO points)
 
-Triggered automatically by the app at **commit time**:
+Triggered automatically by the app at **commit time**. **Multiple rules can stack** — each triggered rule = one extra physical shot before the group moves on.
 
-| Trigger | Reason code | Result |
+| Trigger | Reason code |
+|---|---|
+| Player commits **max sips** (per-hole, e.g. 8 on beer, 3 on shot, 6 on cocktail) | `'max'` |
+| Player commits **1** (just nipping) | `'min'` |
+| Player commits **same number as their previous hole** | `'same_as_last'` |
+
+All triggered reasons are stored in `scores.penalty_shot_reasons` as a TEXT[]. The number of physical shots = `cardinality(penalty_shot_reasons)`.
+
+**Stacking examples:**
+
+| Scenario | Reasons | Shots |
 |---|---|---|
-| Player commits **max sips** (per-hole, e.g. 8 on beer, 3 on shot) | `'max'` | Penalty shot before next hole |
-| Player commits **1** (just nipping) | `'min'` | Penalty shot |
-| Player commits **same number as their previous hole** | `'same_as_last'` | Penalty shot |
+| Commit 1 on hole 3 | `['min']` | 1 |
+| Commit 1 on hole 4 (after 1 on hole 3) | `['min','same_as_last']` | **2** |
+| Commit 8 on hole 4 (after 8 on hole 3, max=8) | `['max','same_as_last']` | **2** |
+| Commit 4 on hole 4 (after 4 on hole 3) | `['same_as_last']` | 1 |
+| Commit 4 on hole 2 (no prior) | `[]` | 0 |
 
-Exempt: hole 1 (practice) and hole 2 (no "previous hole" with real stakes). The "same as last" rule kicks in from hole 3 onward. The `max` and `min` rules apply on every hole including practice.
+**Exceptions**:
+- `'same_as_last'` only triggers from hole 3 onwards (`currentHoleId > 2`)
+- `'max'` and `'min'` apply on every hole including practice (hole 1)
+- Penalty shots are **cosmetic on the scoreboard** (🥃 counter); the pain is purely physical
 
-Note: max varies per hole (8 for beer, 6 for cocktail/coffee, 5 for taster, 3 for shot). The penalty scales — committing 3 on a shot triggers `'max'` just like committing 8 on a beer.
+**Legacy reason code**: old data may have `'8'` (replaced by `'max'`). UI handles both.
 
-Penalty shots are **cosmetic on the scoreboard** (🥃 counter) and add no points. The pain is purely physical.
+---
 
-Legacy reason code: `'8'` (replaced by `'max'`). Old rows from before this change may still use `'8'`; the UI handles both.
+## Cultural waypoints
+
+In addition to the 12 drinking stops, the route includes **5 cultural sights** along the day-time path. They're informational only — not drinking stops, not scored. Stored in `waypoints` table; rendered in route timeline between holes via `after_hole_id`.
+
+| ID | Name | After Stop | Why |
+|---|---|---|---|
+| 1 | Hadrians Port + Olympieion | II | Roman gate (132 AD) + Zeus temple (took 638 years to build) |
+| 2 | Den Ukendte Soldats Grav (Evzones) | III | Vagtskifte hver hele time, fustanella med 400 plisseringer |
+| 3 | Vindenes Tårn + Romersk Agora | V | 8-vejrsguder, hydraulisk vandur fra ~50 f.Kr. |
+| 4 | Hephaistos-templet | VII | Bedst bevarede antikke græske tempel |
+| 5 | Anafiotika | VIII | Cyclades-landsby midt i Plaka |
 
 ---
 
 ## Commitment check (the +3 lever)
 
 After drinking, each player gets **two buttons**:
-- ✅ "Klarede det" — no penalty
-- ❌ "Fejlede (+3)" — 3 points added to this hole's score
+- ✓ "Klarede det" — no penalty
+- ✗ "Fejlede (+III)" — 3 points added to this hole's score (before multiplier)
 
 Honor system. The group polices each other.
 
 ---
 
-## Practice round (hole 1)
+## Practice round (stop 1)
 
-- A walking beer (canned, from a kiosk) on the way from accommodation to KARMINIO
-- Players go through the full flow (commit, reveal, drink, ✅/❌) to learn the mechanics
+- A walking beer (canned, from a kiosk) on the way from accommodation (Geor. Lachouri 3) to KARMINIO (Veikou 86)
+- Players go through the full flow (commit, reveal, drink, ✓/✗) to learn the mechanics
 - **Points DO NOT count** — `is_practice = true` excludes hole 1 from leaderboard sums
-- Penalty shot rules don't apply on hole 1 → 2 transition (the "same as last" check starts from hole 3)
+- Penalty shot rules: `'max'`/`'min'` still trigger; `'same_as_last'` does NOT (from hole 3 onwards only)
 
 ---
 
-## Late-game score multiplier
-
-The last three real holes have weighted scoring — late-game mistakes hurt more.
-
-| Stop | Multiplier | Example |
-|---|---|---|
-| 10 (Barley Cargo R2) | × 1.5 | Score 4 → counts as 6 |
-| 11 (STOA Athens) | × 2.0 | Score 4 → counts as 8 |
-| 12 (BOO! Athens) | × 2.5 | Score 4 → counts as 10 |
-
-Stored as `holes.score_multiplier` (NUMERIC). Default 1.0 for all other holes. Practice round (hole 1) ignores the multiplier since it doesn't count anyway.
-
-The leaderboard formula multiplies the raw hole score (`base + distance + commitment`) by `holes.score_multiplier` then rounds to integer:
-
-```
-hole_total = ROUND( (committed_sips + distance_penalty + commitment_penalty) * score_multiplier )
-```
-
-## Final scoreboard awards (after hole 12)
+## Final scoreboard awards (after stop XII)
 
 Computed client-side from raw scores:
 
@@ -119,24 +145,43 @@ Computed client-side from raw scores:
 |---|---|
 | 🥇🥈🥉 Top 3 | Lowest total scores |
 | 🎯 Sniper | Most spot-ons (distance ≤ 0.5) |
-| 💀 Bunderen | Most commitment-fails (❌) |
-| 🥃 Shame Champion | Most penalty shots |
+| 💀 Bunderen | Most commitment-fails (✗) |
+| 🥃 Shame Champion | Most penalty shots (sum of array lengths) |
 | 📐 Mr. Consistent | Lowest variance in committed sips |
 
 Only "Top 3" affects winning. The rest are roast material.
 
 ---
 
-## App phase flow per hole
+## App phase flow per stop
 
 ```
-COMMIT → REVEAL → DRINK → SCORE → (next hole)
+COMMIT → REVEAL → DRINK → SCORE → (next stop)
 ```
 
-1. **COMMIT**: Stepper screen, lock in. Other players show as "X/6 har committed" (no names — to prevent strategic waiting).
-2. **REVEAL**: All numbers shown simultaneously with stagger animation. Average + penalty shot warnings displayed.
-3. **DRINK**: ✅/❌ commitment-check buttons. Status of who's answered shown.
-4. **SCORE**: Hole breakdown (base + distance + commit penalty), then live leaderboard.
-5. **Next**: Any player can click "NÆSTE HUL" to advance.
+1. **COMMIT**: Stepper screen, lock in. Other players show as "X af Y har committed" (no names — to prevent strategic waiting). Live preview of penalty rules that would trigger.
+2. **REVEAL**: All numbers shown simultaneously with stagger animation. Average + per-player penalty shot list with reason breakdown.
+3. **DRINK**: ✓/✗ commitment-check buttons. Status of who's answered shown.
+4. **SCORE**: Hole breakdown (base + distance + commit penalty × multiplier), then live leaderboard (Stilling tab).
+5. **Next**: Any player can click "FORTSÆT · STOP X+1" to advance.
 
-After hole 12 → final scoreboard with awards.
+After stop 12 → final scoreboard with awards.
+
+---
+
+## History tab visibility (secret commit protection)
+
+A hole's commits are only visible to others **after** its committing phase ends:
+- Past holes: all commits visible
+- Current hole during `committing` phase: only your own commit visible to you; others see 🔒
+- Current hole at `reveal` phase or later: all commits visible
+
+This prevents the History tab from spoiling secret commits in progress. Same logic excludes pending commits from the live leaderboard.
+
+---
+
+## Host notes (Lukas-only)
+
+Both `holes.host_notes` and `waypoints.host_notes` contain juicy historical anecdotes meant for telling the boys at the bar. They render in a gold-bordered "Til Lukas — værts-noter" box only when the logged-in player's name is `Lukas`. Other players see nothing different.
+
+This is purely a UI gating — the data is in the public anon-readable tables. The "secret" is by convention only.
