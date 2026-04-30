@@ -10,7 +10,7 @@ Reference for understanding *why* a score is what it is, and explaining mechanic
 - All players drink the **same drink** at each stop
 - Each player **secretly commits** to a number of sips before drinking
 - After all commit, numbers are **revealed simultaneously**, group average is computed
-- Players are scored on **committed sips + distance penalty from the average**, then **multiplied by the stop's `score_multiplier`** (1.0 for most stops, 1.5/2.0/2.5 for the last three)
+- Players are scored **only** on the **distance penalty from the average** + commitment penalty, then **multiplied by the stop's `score_multiplier`** (1.0 for most stops, 1.5/2.0/2.5 for the last three). The number of sips itself contributes **zero points**.
 
 **Lowest total after stop XII wins** (like real golf).
 
@@ -19,8 +19,10 @@ Reference for understanding *why* a score is what it is, and explaining mechanic
 ## Scoring formula
 
 ```
-hole_total = ROUND( (committed_sips + distance_penalty + commitment_penalty) × score_multiplier )
+hole_total = ROUND( (distance_penalty + commitment_penalty) × score_multiplier )
 ```
+
+The committed sips number has **no direct point value** — it's only used to compute the group average and the distance penalty.
 
 ### Distance penalty table
 
@@ -41,21 +43,21 @@ hole_total = ROUND( (committed_sips + distance_penalty + commitment_penalty) × 
 
 ### Strategic implication
 
-- Fewer sips = lower base, but higher risk of being far from average
-- More sips = safer (close to crowd) but expensive base
-- The sweet spot is **just below average** — typically same total score as hitting the average exactly, but bolder
+- Sips don't score — only the **distance from the group average** does
+- The sweet spot is **exactly the average** (distance ≤ 0.5 → 0 penalty)
+- Volume only matters via straf-shots (drinking penalties at extremes), not points
 
 ### Example (group avg = 4.0, no multiplier)
 
-| Committed | Base | Distance | Penalty | **Total** |
-|---|---|---|---|---|
-| 1 | 1 | 3.0 | +4 | 5 + straf-shots! |
-| 2 | 2 | 2.0 | +3 | 5 |
-| 3 | 3 | 1.0 | +1 | **4** ← winner |
-| 4 | 4 | 0.0 | +0 | **4** ← winner |
-| 5 | 5 | 1.0 | +1 | 6 |
-| 6 | 6 | 2.0 | +3 | 9 |
-| 8 | 8 | 4.0 | +4 | 12 + straf-shot! |
+| Committed | Distance | Penalty | **Total** |
+|---|---|---|---|
+| 1 | 3.0 | +4 | 4 + straf-shot! |
+| 2 | 2.0 | +3 | 3 |
+| 3 | 1.0 | +1 | **1** |
+| 4 | 0.0 | +0 | **0** ← winner |
+| 5 | 1.0 | +1 | **1** |
+| 6 | 2.0 | +3 | 3 |
+| 8 | 4.0 | +4 | 4 + straf-shot! |
 
 ---
 
@@ -68,6 +70,8 @@ The last three stops have weighted scoring — late-game mistakes hurt more.
 | 10 (Beer Time) | × 1.5 | 4 → 6 |
 | 11 (Drupes) | × 2.0 | 4 → 8 |
 | 12 (BOO! Athens) | × 2.5 | 4 → 10 |
+
+(Raw 4 = max distance penalty for being well off the average. Best possible per-hole score is still 0.)
 
 Stored as `holes.score_multiplier` (NUMERIC). Default 1.0 for all other holes. Practice round (hole 1) ignores the multiplier since `is_practice = true` excludes it from the leaderboard regardless.
 

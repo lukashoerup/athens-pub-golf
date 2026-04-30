@@ -65,8 +65,8 @@ export function computeHoleScores(
     const base = score.committed_sips
     const distancePenalty = isPractice ? 0 : calculateDistancePenalty(base, average)
     const commitmentPenalty = isPractice ? 0 : score.completed === false ? 3 : 0
-    const rawTotal = base + distancePenalty + commitmentPenalty
-    const total = isPractice ? rawTotal : Math.round(rawTotal * multiplier)
+    const rawTotal = distancePenalty + commitmentPenalty
+    const total = isPractice ? 0 : Math.round(rawTotal * multiplier)
     return { player, score, base, distancePenalty, commitmentPenalty, rawTotal, multiplier, total }
   })
 }
@@ -95,7 +95,7 @@ export function computeLeaderboard(
         const average = calculateGroupAverage(allSips)
         const distancePenalty = calculateDistancePenalty(myScore.committed_sips, average)
         const commitmentPenalty = myScore.completed === false ? 3 : 0
-        const rawTotal = myScore.committed_sips + distancePenalty + commitmentPenalty
+        const rawTotal = distancePenalty + commitmentPenalty
         const multiplier = hole.score_multiplier ?? 1
 
         total += Math.round(rawTotal * multiplier)

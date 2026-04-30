@@ -8,12 +8,12 @@ const PENALTY_TABLE: { range: string; penalty: string; label: string }[] = [
   { range: 'Over ±2.0', penalty: '+4', label: 'Outlier' },
 ]
 
-const EXAMPLE: { sips: number; base: number; distance: number; penalty: number; total: number; note?: string }[] = [
-  { sips: 1, base: 1, distance: 3.0, penalty: 4, total: 5, note: 'Modig — men langt fra' },
-  { sips: 3, base: 3, distance: 1.0, penalty: 1, total: 4, note: 'Sweet spot' },
-  { sips: 4, base: 4, distance: 0, penalty: 0, total: 4, note: 'Spot on' },
-  { sips: 5, base: 5, distance: 1.0, penalty: 1, total: 6 },
-  { sips: 8, base: 8, distance: 4.0, penalty: 4, total: 12, note: 'Straf-shot!' },
+const EXAMPLE: { sips: number; distance: number; penalty: number; total: number; note?: string }[] = [
+  { sips: 1, distance: 3.0, penalty: 4, total: 4, note: 'Langt fra + straf-shot' },
+  { sips: 3, distance: 1.0, penalty: 1, total: 1, note: 'Tæt på' },
+  { sips: 4, distance: 0, penalty: 0, total: 0, note: 'Spot on — laveste score' },
+  { sips: 5, distance: 1.0, penalty: 1, total: 1, note: 'Tæt på' },
+  { sips: 8, distance: 4.0, penalty: 4, total: 4, note: 'Outlier + straf-shot' },
 ]
 
 interface Props {
@@ -44,7 +44,10 @@ export default function Rules({ compact = false }: Props) {
 
         <div className="bg-parchment-light border border-rule px-4 py-3">
           <p className="font-serif italic text-ink text-base text-center leading-snug">
-            Din score = dit valgte tal + afstandsstraf fra gennemsnittet
+            Din score = afstandsstraf fra gennemsnittet
+          </p>
+          <p className="font-serif italic text-ink-muted text-sm text-center leading-snug mt-1">
+            Antallet af slurke giver ingen point i sig selv — kun afvigelsen tæller.
           </p>
         </div>
 
@@ -72,31 +75,29 @@ export default function Rules({ compact = false }: Props) {
         <div className="border border-rule">
           <div className="grid grid-cols-12 bg-parchment-dark/50 border-b border-rule">
             <p className="smallcaps col-span-2 px-2 py-2">Du</p>
-            <p className="smallcaps col-span-2 px-2 py-2 text-center">Base</p>
-            <p className="smallcaps col-span-2 px-2 py-2 text-center">±</p>
+            <p className="smallcaps col-span-3 px-2 py-2 text-center">±</p>
             <p className="smallcaps col-span-2 px-2 py-2 text-center">Straf</p>
             <p className="smallcaps col-span-2 px-2 py-2 text-center">Total</p>
-            <p className="smallcaps col-span-2 px-2 py-2 text-right">Note</p>
+            <p className="smallcaps col-span-3 px-2 py-2 text-right">Note</p>
           </div>
           {EXAMPLE.map((row, i) => (
             <div
               key={i}
               className={`grid grid-cols-12 items-center ${i < EXAMPLE.length - 1 ? 'border-b border-rule' : ''} ${
-                row.total === 4 ? 'bg-olive/5' : ''
+                row.total === 0 ? 'bg-olive/5' : ''
               }`}
             >
               <p className="font-mono text-ink text-base font-semibold col-span-2 px-2 py-1.5">{row.sips}</p>
-              <p className="font-mono text-ink-muted text-sm col-span-2 px-2 py-1.5 text-center">{row.base}</p>
-              <p className="font-mono text-ink-muted text-sm col-span-2 px-2 py-1.5 text-center">{row.distance.toFixed(1)}</p>
+              <p className="font-mono text-ink-muted text-sm col-span-3 px-2 py-1.5 text-center">{row.distance.toFixed(1)}</p>
               <p className="font-mono text-ink-muted text-sm col-span-2 px-2 py-1.5 text-center">+{row.penalty}</p>
               <p
                 className={`font-mono text-base font-semibold col-span-2 px-2 py-1.5 text-center ${
-                  row.total === 4 ? 'text-olive' : row.total >= 10 ? 'text-wine' : 'text-ink'
+                  row.total === 0 ? 'text-olive' : row.total >= 4 ? 'text-wine' : 'text-ink'
                 }`}
               >
                 {row.total}
               </p>
-              <p className="font-serif italic text-ink-muted text-xs col-span-2 px-2 py-1.5 text-right leading-tight">
+              <p className="font-serif italic text-ink-muted text-xs col-span-3 px-2 py-1.5 text-right leading-tight">
                 {row.note ?? ''}
               </p>
             </div>
@@ -108,9 +109,9 @@ export default function Rules({ compact = false }: Props) {
       <section className="space-y-2">
         <p className="smallcaps-ink">Strategien</p>
         <ul className="font-sans text-ink-secondary text-base space-y-1.5 leading-snug list-none">
-          <li><strong>Færre slurke</strong> = lavere base, men risiko for at være langt fra gennemsnittet.</li>
-          <li><strong>Flere slurke</strong> = sikrere, men højere base-score.</li>
-          <li><strong>Sweet spot</strong>: gæt hvad de andre vælger, og gå <em>lige under</em>.</li>
+          <li>Antallet af slurke giver <strong>ingen point</strong> i sig selv. Du bliver kun straffet for at afvige fra gruppens gennemsnit.</li>
+          <li><strong>Sweet spot</strong>: gæt hvad de andre vælger, og ram tallet præcist.</li>
+          <li>Pas på straf-shots ved I og max — de koster ikke point, men de koster væske.</li>
         </ul>
       </section>
 

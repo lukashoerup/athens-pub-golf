@@ -216,7 +216,7 @@ scored AS (
 )
 SELECT
   p.name,
-  COALESCE(SUM(ROUND((committed_sips + distance_penalty + commitment_penalty) * score_multiplier))::int, 0) AS total_score,
+  COALESCE(SUM(ROUND((distance_penalty + commitment_penalty) * score_multiplier))::int, 0) AS total_score,
   COALESCE(SUM(cardinality(penalty_shot_reasons))::int, 0) AS penalty_shots,
   COUNT(*) FILTER (WHERE completed = false) AS commitment_fails,
   COUNT(*) FILTER (WHERE distance_penalty = 0) AS spot_ons
@@ -231,7 +231,7 @@ ORDER BY total_score ASC;
 ## Scoring formula (must match `lib/scoring.ts`)
 
 ```
-hole_total = ROUND( (committed_sips + distance_penalty + commitment_penalty) * score_multiplier )
+hole_total = ROUND( (distance_penalty + commitment_penalty) * score_multiplier )
 
 distance_penalty:
   ABS(sips - avg) <= 0.5 → 0
@@ -247,6 +247,8 @@ commitment_penalty:
 penalty_shots (drinks, NOT points):
   one per element in penalty_shot_reasons array
 ```
+
+The committed sips count is **not** added to the score directly — it only feeds the average. Best possible per-hole score is 0 (spot on + completed).
 
 Practice round (hole 1) is excluded from leaderboard sums.
 

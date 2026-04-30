@@ -93,8 +93,8 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
                 {!hole.is_practice ? (
                   <div className="flex items-baseline gap-2">
                     <span className="font-mono text-ink-muted text-sm">
-                      {base}
-                      {distancePenalty > 0 && ` +${distancePenalty}`}
+                      {base != null && `${base} slurke`}
+                      {distancePenalty > 0 && ` · +${distancePenalty}`}
                       {commitmentPenalty > 0 && ` +${commitmentPenalty}`}
                       {multiplier > 1 && ` ×${multiplier}`}
                     </span>
@@ -104,7 +104,7 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
                   </div>
                 ) : (
                   <span className="font-serif text-ink" style={{ fontSize: '1.4rem' }}>
-                    {base}
+                    {base ?? '—'}
                   </span>
                 )}
               </div>

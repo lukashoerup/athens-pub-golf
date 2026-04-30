@@ -406,7 +406,7 @@ scored AS (
   WHERE s.committed_sips IS NOT NULL AND h.is_practice = false
 )
 SELECT p.name,
-  COALESCE(SUM(ROUND((committed_sips + dp + cp) * score_multiplier))::int, 0) AS total,
+  COALESCE(SUM(ROUND((dp + cp) * score_multiplier))::int, 0) AS total,
   COALESCE(SUM(cardinality(penalty_shot_reasons))::int, 0) AS shots,
   COUNT(*) FILTER (WHERE completed = false) AS fails
 FROM players p LEFT JOIN scored s ON s.player_id = p.id
