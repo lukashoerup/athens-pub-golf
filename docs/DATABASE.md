@@ -131,7 +131,7 @@ Tracks current hole and phase for the whole group.
 | `id` | INT | always `1` |
 | `current_hole` | INT | 1–12 (or beyond if extra stops added) |
 | `phase` | TEXT | one of: `'committing'`, `'reveal'`, `'drinking'`, `'scoring'` |
-| `drink_deadline_at` | TIMESTAMPTZ | Nullable. Set to NOW() + 5 min when the first player marks ✓ in the drinking phase. Any client whose own score is still null when this expires auto-fails (`completed=false`, +3 penalty). Reset to null on phase transitions. |
+| `drink_deadline_at` | TIMESTAMPTZ | Nullable. Set to NOW() + 2 min when the first player marks ✓ in the drinking phase. Any client whose own score is still null when this expires auto-fails (`completed=false`, +3 penalty). Reset to null on phase transitions. |
 
 ---
 

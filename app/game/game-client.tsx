@@ -17,7 +17,7 @@ import RouteTimeline from '@/components/RouteTimeline'
 import LaurelWreath from '@/components/decorations/LaurelWreath'
 
 const TOTAL_PLAYERS = 6
-const DRINK_DEADLINE_MS = 5 * 60 * 1000 // 5-min deadline once first player finishes
+const DRINK_DEADLINE_MS = 2 * 60 * 1000 // 2-min deadline once first player finishes
 
 export default function GamePage() {
   const router = useRouter()
