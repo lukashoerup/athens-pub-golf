@@ -341,13 +341,6 @@ function HistoryTab({
                   const hs = revealed ? holeData.get(hole.id)?.scoresByPlayerId.get(player.id) : undefined
                   const points = hs ? (isPractice ? hs.rawTotal : hs.total) : null
 
-                  // What to display in the cell
-                  let cellContent: string
-                  if (hiddenSecret) cellContent = '🔒'
-                  else if (points != null) cellContent = String(points)
-                  else if (sips != null) cellContent = `(${sips})` // own pre-reveal commit
-                  else cellContent = '·'
-
                   return (
                     <div
                       key={hole.id}
@@ -382,9 +375,27 @@ function HistoryTab({
                           : `Stop ${toRoman(hole.id)}: endnu ikke spillet`
                       }
                     >
-                      <p className="font-mono text-base font-semibold leading-none">
-                        {cellContent}
-                      </p>
+                      {hiddenSecret ? (
+                        <p className="font-mono text-base font-semibold leading-none py-1">
+                          🔒
+                        </p>
+                      ) : sips != null ? (
+                        <div className="leading-none">
+                          <p
+                            className="font-mono text-ink-muted"
+                            style={{ fontSize: '0.6rem', letterSpacing: '0.04em' }}
+                          >
+                            {sips}
+                          </p>
+                          <p className="font-mono text-base font-semibold mt-0.5 leading-none">
+                            {points != null ? points : '·'}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="font-mono text-base font-semibold leading-none py-1">
+                          ·
+                        </p>
+                      )}
                     </div>
                   )
                 })}
