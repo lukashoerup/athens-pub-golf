@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Hole, Player, Score } from '@/lib/types'
 import { toRoman } from '@/lib/format'
 import MeanderRule from '@/components/decorations/MeanderRule'
@@ -16,9 +16,24 @@ interface Props {
 export default function DrinkPhase({ hole, scores, players, myScore, onDrinkResult }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [confirmFail, setConfirmFail] = useState(false)
+  const [sipsTaken, setSipsTaken] = useState(0)
+
+  // Persist sip count locally per (hole, player) so a refresh doesn't lose it.
+  const sipKey = myScore ? `sip-count-${hole.id}-${myScore.player_id}` : null
+  useEffect(() => {
+    if (!sipKey) return
+    const stored = sessionStorage.getItem(sipKey)
+    setSipsTaken(stored ? parseInt(stored, 10) || 0 : 0)
+  }, [sipKey])
+  useEffect(() => {
+    if (!sipKey) return
+    sessionStorage.setItem(sipKey, String(sipsTaken))
+  }, [sipKey, sipsTaken])
 
   const hasAnswered = myScore?.completed !== null && myScore?.completed !== undefined
   const confirmedCount = scores.filter((s) => s.completed !== null).length
+  const committed = myScore?.committed_sips ?? 0
+  const reachedTarget = committed > 0 && sipsTaken >= committed
 
   async function handleResult(completed: boolean) {
     setSubmitting(true)
@@ -57,6 +72,51 @@ export default function DrinkPhase({ hole, scores, players, myScore, onDrinkResu
           <p className="font-serif text-ink text-lg mt-3 leading-tight">
             Drak du den på {toRoman(myScore.committed_sips!)} slurke?
           </p>
+        </div>
+      )}
+
+      {/* Sip counter (local memory aid — does not affect score) */}
+      {myScore && !hasAnswered && (
+        <div
+          className={`border px-5 py-5 text-center transition-colors ${
+            reachedTarget ? 'border-gold/60 bg-gold/5' : 'border-rule bg-parchment-light'
+          }`}
+        >
+          <p className="smallcaps mb-3">Slurketæller</p>
+          <button
+            type="button"
+            onClick={() => setSipsTaken((n) => n + 1)}
+            className="w-full py-4 active:bg-parchment-dark/30 transition-colors"
+            aria-label="Tilføj én slurk"
+          >
+            <p
+              className="font-serif text-ink leading-none"
+              style={{ fontSize: '3.4rem', fontWeight: 500, letterSpacing: '0.02em' }}
+            >
+              {sipsTaken === 0 ? '·' : toRoman(sipsTaken)}
+              <span className="font-serif italic text-ink-muted" style={{ fontSize: '1.6rem' }}>
+                {' / '}
+              </span>
+              {toRoman(committed)}
+            </p>
+            <p className="font-serif italic text-ink-muted text-sm mt-2">
+              {sipsTaken} af {committed} slurke
+            </p>
+          </button>
+          <p className="font-sans text-ink-muted text-xs mt-3" style={{ letterSpacing: '0.06em' }}>
+            {reachedTarget
+              ? 'Du har ramt dit commit — bekræft nedenfor'
+              : 'Tryk på tælleren hver gang du tager en slurk'}
+          </p>
+          {sipsTaken > 0 && (
+            <button
+              type="button"
+              onClick={() => setSipsTaken((n) => Math.max(0, n - 1))}
+              className="font-mono text-ink-muted text-xs mt-3 underline underline-offset-4"
+            >
+              Trin tilbage
+            </button>
+          )}
         </div>
       )}
 
