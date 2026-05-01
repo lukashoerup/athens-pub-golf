@@ -53,6 +53,9 @@ export interface GameState {
   id: number
   current_hole: number
   phase: Phase
+  /** Deadline for everyone to finish drinking. Set when the first player marks ✓.
+   * Null when not in drinking phase or no one has finished yet. */
+  drink_deadline_at: string | null
 }
 
 export interface HoleScore {

@@ -218,6 +218,29 @@ WHERE player_id = (SELECT id FROM players WHERE name = 'Misse')
 
 ---
 
+## R9b: Drink timer fixes
+
+The drinking phase has a 5-min deadline that starts when the first player marks ✓. Anyone still pending when it expires auto-fails (+3).
+
+**Give everyone more time** (extend by N minutes):
+```sql
+UPDATE game_state
+SET drink_deadline_at = drink_deadline_at + INTERVAL '3 minutes'
+WHERE id = 1;
+```
+
+**Cancel the timer** (no auto-fail):
+```sql
+UPDATE game_state SET drink_deadline_at = NULL WHERE id = 1;
+```
+
+**Restart the timer fresh from now**:
+```sql
+UPDATE game_state SET drink_deadline_at = NOW() + INTERVAL '5 minutes' WHERE id = 1;
+```
+
+---
+
 ## R10: Nuke and restart the entire game
 
 > "We've completely lost the plot, start over from hole 1"

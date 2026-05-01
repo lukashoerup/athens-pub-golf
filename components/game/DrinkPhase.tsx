@@ -10,13 +10,31 @@ interface Props {
   scores: Score[]
   players: Player[]
   myScore: Score | undefined
+  /** ISO timestamp — set when the first player marks ✓. Null until then. */
+  deadlineAt: string | null
   onDrinkResult: (completed: boolean) => Promise<void>
 }
 
-export default function DrinkPhase({ hole, scores, players, myScore, onDrinkResult }: Props) {
+export default function DrinkPhase({ hole, scores, players, myScore, deadlineAt, onDrinkResult }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [confirmFail, setConfirmFail] = useState(false)
   const [sipsTaken, setSipsTaken] = useState(0)
+  const [now, setNow] = useState(() => Date.now())
+
+  // Tick once a second while there's an active deadline.
+  useEffect(() => {
+    if (!deadlineAt) return
+    const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
+  }, [deadlineAt])
+
+  const deadlineMs = deadlineAt ? new Date(deadlineAt).getTime() : null
+  const remainingMs = deadlineMs != null ? Math.max(0, deadlineMs - now) : null
+  const remainingSec = remainingMs != null ? Math.ceil(remainingMs / 1000) : null
+  const remainingMin = remainingSec != null ? Math.floor(remainingSec / 60) : null
+  const remainingSecPart = remainingSec != null ? remainingSec % 60 : null
+  const isUrgent = remainingMs != null && remainingMs <= 30_000 && remainingMs > 0
+  const isExpired = remainingMs === 0
 
   // Persist sip count locally per (hole, player) so a refresh doesn't lose it.
   const sipKey = myScore ? `sip-count-${hole.id}-${myScore.player_id}` : null
@@ -54,6 +72,36 @@ export default function DrinkPhase({ hole, scores, players, myScore, onDrinkResu
         <h2 className="display-lg mt-3">Æresspørgsmål</h2>
         <MeanderRule width={140} className="mx-auto mt-5" />
       </div>
+
+      {/* 5-min countdown — visible to all players once first ✓ has been registered */}
+      {remainingMs != null && !hasAnswered && (
+        <div
+          className={`border px-5 py-4 text-center transition-colors ${
+            isExpired
+              ? 'border-wine/60 bg-wine/10 text-wine'
+              : isUrgent
+              ? 'border-wine/40 bg-wine/5 text-wine'
+              : 'border-gold/40 bg-gold/5 text-ink'
+          }`}
+        >
+          <p className="smallcaps mb-1">
+            {isExpired ? 'Tid udløbet' : 'Tid tilbage'}
+          </p>
+          <p
+            className="font-mono leading-none"
+            style={{ fontSize: '2.4rem', fontWeight: 600, letterSpacing: '0.04em' }}
+          >
+            {isExpired
+              ? '+III'
+              : `${remainingMin}:${String(remainingSecPart).padStart(2, '0')}`}
+          </p>
+          <p className="font-serif italic text-ink-muted text-sm mt-2">
+            {isExpired
+              ? 'Du fik tre strafpoint — gruppen er videre.'
+              : 'Bunde drinken inden uret går — ellers +III strafpoint.'}
+          </p>
+        </div>
+      )}
 
       {myScore && (
         <div className="text-center field-card py-8">

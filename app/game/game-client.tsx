@@ -17,6 +17,7 @@ import RouteTimeline from '@/components/RouteTimeline'
 import LaurelWreath from '@/components/decorations/LaurelWreath'
 
 const TOTAL_PLAYERS = 6
+const DRINK_DEADLINE_MS = 5 * 60 * 1000 // 5-min deadline once first player finishes
 
 export default function GamePage() {
   const router = useRouter()
@@ -139,12 +140,38 @@ export default function GamePage() {
     if (answeredThisHole.length >= TOTAL_PLAYERS) {
       supabase
         .from('game_state')
-        .update({ phase: 'scoring' })
+        .update({ phase: 'scoring', drink_deadline_at: null })
         .eq('id', 1)
         .eq('phase', 'drinking')
         .then()
     }
   }, [scores, gameState])
+
+  // Auto-fail anyone whose drink deadline has expired. Any active client runs
+  // this — the `.is('completed', null)` filter makes the update idempotent.
+  useEffect(() => {
+    if (!gameState || gameState.phase !== 'drinking' || !gameState.drink_deadline_at) return
+    const deadline = new Date(gameState.drink_deadline_at).getTime()
+    const currentHole = gameState.current_hole
+    function expireSlackers() {
+      if (Date.now() < deadline) return
+      const stillNull = scores.filter(
+        (s) => s.hole_id === currentHole && s.completed === null
+      )
+      if (stillNull.length === 0) return
+      for (const s of stillNull) {
+        supabase
+          .from('scores')
+          .update({ completed: false })
+          .eq('id', s.id)
+          .is('completed', null)
+          .then()
+      }
+    }
+    expireSlackers()
+    const interval = setInterval(expireSlackers, 2000)
+    return () => clearInterval(interval)
+  }, [gameState, scores])
 
   const handleCommit = useCallback(
     async (sips: number) => {
@@ -170,9 +197,10 @@ export default function GamePage() {
   )
 
   const handleRevealComplete = useCallback(async () => {
+    // Reset the drink deadline for the new drinking phase.
     await supabase
       .from('game_state')
-      .update({ phase: 'drinking' })
+      .update({ phase: 'drinking', drink_deadline_at: null })
       .eq('id', 1)
       .eq('phase', 'reveal')
   }, [])
@@ -185,6 +213,18 @@ export default function GamePage() {
         .update({ completed })
         .eq('player_id', currentPlayer.id)
         .eq('hole_id', gameState.current_hole)
+
+      // First player to finish (✓) starts the 5-min countdown for everyone else.
+      // The `.is('drink_deadline_at', null)` guard makes this race-safe — only the
+      // first concurrent UPDATE wins; later ones become no-ops.
+      if (completed && !gameState.drink_deadline_at) {
+        const deadline = new Date(Date.now() + DRINK_DEADLINE_MS).toISOString()
+        await supabase
+          .from('game_state')
+          .update({ drink_deadline_at: deadline })
+          .eq('id', 1)
+          .is('drink_deadline_at', null)
+      }
     },
     [currentPlayer, gameState]
   )
@@ -198,7 +238,7 @@ export default function GamePage() {
     if (nextHole == null) return // No more holes — game over
     await supabase
       .from('game_state')
-      .update({ current_hole: nextHole, phase: 'committing' })
+      .update({ current_hole: nextHole, phase: 'committing', drink_deadline_at: null })
       .eq('id', 1)
       .eq('phase', 'scoring')
   }, [gameState, holes])
@@ -345,6 +385,7 @@ export default function GamePage() {
             scores={currentHoleScores}
             players={players}
             myScore={myCurrentScore}
+            deadlineAt={gameState.drink_deadline_at}
             onDrinkResult={handleDrinkResult}
           />
         )}
