@@ -63,8 +63,8 @@ export function computeHoleScores(
       }
     }
     const base = score.committed_sips
-    const distancePenalty = isPractice ? 0 : calculateDistancePenalty(base, average)
-    const commitmentPenalty = isPractice ? 0 : score.completed === false ? 3 : 0
+    const distancePenalty = calculateDistancePenalty(base, average)
+    const commitmentPenalty = score.completed === false ? 3 : 0
     const rawTotal = distancePenalty + commitmentPenalty
     const total = isPractice ? 0 : Math.round(rawTotal * multiplier)
     return { player, score, base, distancePenalty, commitmentPenalty, rawTotal, multiplier, total }

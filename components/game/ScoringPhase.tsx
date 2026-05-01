@@ -24,7 +24,7 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
   const avg = calculateGroupAverage(allSips)
   const leaderboard = computeLeaderboard(players, allScores, holes)
 
-  const sorted = [...holeScores].sort((a, b) => a.total - b.total)
+  const sorted = [...holeScores].sort((a, b) => a.rawTotal - b.rawTotal)
   const lastHoleId = Math.max(...holes.map((h) => h.id))
   const isLastHole = hole.id === lastHoleId
   const sortedIds = holes.map((h) => h.id).sort((a, b) => a - b)
@@ -90,23 +90,17 @@ export default function ScoringPhase({ hole, scores, players, allScores, holes, 
                   </div>
                 </div>
 
-                {!hole.is_practice ? (
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-mono text-ink-muted text-sm">
-                      {base != null && `${base} slurke`}
-                      {distancePenalty > 0 && ` · +${distancePenalty}`}
-                      {commitmentPenalty > 0 && ` +${commitmentPenalty}`}
-                      {multiplier > 1 && ` ×${multiplier}`}
-                    </span>
-                    <span className={`font-serif ${tone}`} style={{ fontSize: '1.6rem', fontWeight: 600 }}>
-                      {total}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="font-serif text-ink" style={{ fontSize: '1.4rem' }}>
-                    {base ?? '—'}
+                <div className="flex items-baseline gap-2">
+                  <span className="font-mono text-ink-muted text-sm">
+                    {base != null && `${base} slurke`}
+                    {distancePenalty > 0 && ` · +${distancePenalty}`}
+                    {commitmentPenalty > 0 && ` +${commitmentPenalty}`}
+                    {!hole.is_practice && multiplier > 1 && ` ×${multiplier}`}
                   </span>
-                )}
+                  <span className={`font-serif ${tone}`} style={{ fontSize: '1.6rem', fontWeight: 600 }}>
+                    {hole.is_practice ? distancePenalty + commitmentPenalty : total}
+                  </span>
+                </div>
               </div>
             )
           })}
