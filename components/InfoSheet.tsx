@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import type { Player, Score, Hole, GameState } from '@/lib/types'
-import { computeLeaderboard, calculateGroupAverage } from '@/lib/scoring'
+import type { Player, Score, Hole, GameState, HoleScore } from '@/lib/types'
+import { computeLeaderboard, computeHoleScores, calculateGroupAverage } from '@/lib/scoring'
 import { toRoman } from '@/lib/format'
 import Rules from './Rules'
 
@@ -126,7 +126,7 @@ function StandingTab({ players, scores, holes }: { players: Player[]; scores: Sc
         Efter {playedStops > 0 ? `Stop ${toRoman(playedStops)}` : 'ingen stop'}
       </p>
 
-      {board.every((e) => e.total === 0) ? (
+      {playedStops === 0 ? (
         <p className="text-center font-serif italic text-ink-muted text-base py-10">
           Ingen scores endnu — spil et stop.
         </p>
@@ -210,20 +210,36 @@ function HistoryTab({
     )
   }
 
-  // Group average per hole — only for holes whose committing phase is over
-  const holeAverages = sortedHoles.map((hole) => {
-    const revealed = isHoleRevealed(hole.id, gameState)
-    if (!revealed) return { hole, avg: null as number | null }
+  // Group average + per-player points per hole — only for revealed holes
+  const holeData = new Map<
+    number,
+    { avg: number; scoresByPlayerId: Map<string, HoleScore> }
+  >()
+  for (const hole of sortedHoles) {
+    if (!isHoleRevealed(hole.id, gameState)) continue
     const sips = scores
       .filter((s) => s.hole_id === hole.id && s.committed_sips != null)
       .map((s) => s.committed_sips as number)
-    if (sips.length === 0) return { hole, avg: null }
-    return { hole, avg: calculateGroupAverage(sips) }
-  })
+    if (sips.length === 0) continue
+    const avg = calculateGroupAverage(sips)
+    const hs = computeHoleScores(
+      players,
+      scores,
+      hole.id,
+      hole.is_practice,
+      hole.score_multiplier ?? 1
+    )
+    const scoresByPlayerId = new Map(hs.map((s) => [s.player.id, s]))
+    holeData.set(hole.id, { avg, scoresByPlayerId })
+  }
+  const holeAverages = sortedHoles.map((hole) => ({
+    hole,
+    avg: holeData.get(hole.id)?.avg ?? null,
+  }))
 
   return (
     <div className="px-5 py-5 space-y-1">
-      <p className="smallcaps mb-3 px-1">Hvad har folk gættet?</p>
+      <p className="smallcaps mb-3 px-1">Pointoversigt</p>
 
       {/* Group average per hole */}
       <div className="py-3 border-b border-rule">
@@ -309,7 +325,7 @@ function HistoryTab({
                 </p>
               </div>
 
-              {/* Commit cells per hole */}
+              {/* Point cells per hole */}
               <div className="grid grid-cols-12 gap-px">
                 {playerCommits.map(({ hole, score, showCommit, revealed }) => {
                   const sips = score?.committed_sips
@@ -319,6 +335,18 @@ function HistoryTab({
 
                   // Hidden = secret commit from another player on the current hole
                   const hiddenSecret = sips != null && !showCommit
+
+                  // Points: only meaningful once the hole is revealed (we have an avg).
+                  // For practice we show rawTotal (dist + commit) since `total` is forced to 0.
+                  const hs = revealed ? holeData.get(hole.id)?.scoresByPlayerId.get(player.id) : undefined
+                  const points = hs ? (isPractice ? hs.rawTotal : hs.total) : null
+
+                  // What to display in the cell
+                  let cellContent: string
+                  if (hiddenSecret) cellContent = '🔒'
+                  else if (points != null) cellContent = String(points)
+                  else if (sips != null) cellContent = `(${sips})` // own pre-reveal commit
+                  else cellContent = '·'
 
                   return (
                     <div
@@ -331,6 +359,10 @@ function HistoryTab({
                             ? 'bg-wine/8 border-wine/30 text-wine'
                             : isPractice
                             ? 'bg-parchment-dark/60 border-rule text-ink-muted'
+                            : points === 0
+                            ? 'bg-olive/8 border-olive/30 text-olive'
+                            : points != null && points >= 4
+                            ? 'bg-wine/8 border-wine/30 text-wine'
                             : 'bg-parchment-light border-rule text-ink'
                           : isCurrent && !revealed && isOwnRow
                           ? 'border-rule/50 text-ink-faint border-dashed'
@@ -344,14 +376,14 @@ function HistoryTab({
                         hiddenSecret
                           ? `Stop ${toRoman(hole.id)}: hemmelig — afsløres efter alle har committed`
                           : sips != null
-                          ? `Stop ${toRoman(hole.id)}: ${sips} slurke${failed ? ' (fejlede)' : ''}${
-                              score?.penalty_shot ? ' (straf-shot)' : ''
-                            }`
+                          ? `Stop ${toRoman(hole.id)}: ${sips} slurke${
+                              points != null ? ` → ${points} point${isPractice ? ' (tæller ikke)' : ''}` : ''
+                            }${failed ? ' (fejlede)' : ''}${score?.penalty_shot ? ' (straf-shot)' : ''}`
                           : `Stop ${toRoman(hole.id)}: endnu ikke spillet`
                       }
                     >
                       <p className="font-mono text-base font-semibold leading-none">
-                        {hiddenSecret ? '🔒' : sips ?? '·'}
+                        {cellContent}
                       </p>
                     </div>
                   )
@@ -376,18 +408,22 @@ function HistoryTab({
 
       {/* Legend */}
       <div className="pt-4 px-1 space-y-1">
-        <p className="smallcaps mb-2">Legende</p>
+        <p className="smallcaps mb-2">Legende — tal er point</p>
+        <div className="flex items-center gap-2 text-ink-muted">
+          <span className="inline-block w-3 h-3 bg-olive/8 border border-olive/30" />
+          <span className="font-sans text-sm">Spot on (0 point)</span>
+        </div>
         <div className="flex items-center gap-2 text-ink-muted">
           <span className="inline-block w-3 h-3 bg-parchment-light border border-rule" />
-          <span className="font-sans text-sm">Spillet</span>
+          <span className="font-sans text-sm">Lav score</span>
+        </div>
+        <div className="flex items-center gap-2 text-ink-muted">
+          <span className="inline-block w-3 h-3 bg-wine/8 border border-wine/30" />
+          <span className="font-sans text-sm">Høj score (≥4) eller fejlet commitment</span>
         </div>
         <div className="flex items-center gap-2 text-ink-muted">
           <span className="inline-block w-3 h-3 bg-parchment-dark/40 border border-gold/30 border-dashed" />
           <span className="font-sans text-sm">Hemmelig — afsløres efter reveal</span>
-        </div>
-        <div className="flex items-center gap-2 text-ink-muted">
-          <span className="inline-block w-3 h-3 bg-wine/8 border border-wine/30" />
-          <span className="font-sans text-sm">Fejlede commitment (+III)</span>
         </div>
         <div className="flex items-center gap-2 text-ink-muted">
           <span className="inline-block w-3 h-3 border border-rule ring-1 ring-gold/60 ring-inset" />
