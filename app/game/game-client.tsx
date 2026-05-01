@@ -208,11 +208,15 @@ export default function GamePage() {
   const handleDrinkResult = useCallback(
     async (completed: boolean) => {
       if (!currentPlayer || !gameState) return
+      // `.is('completed', null)` ensures a slow phone can't undo an auto-fail
+      // that already fired. If the timer expired and set completed=false, this
+      // update becomes a no-op.
       await supabase
         .from('scores')
         .update({ completed })
         .eq('player_id', currentPlayer.id)
         .eq('hole_id', gameState.current_hole)
+        .is('completed', null)
 
       // First player to finish (✓) starts the 5-min countdown for everyone else.
       // The `.is('drink_deadline_at', null)` guard makes this race-safe — only the
