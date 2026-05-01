@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { Player, Score, Hole, GameState } from '@/lib/types'
-import { computeLeaderboard } from '@/lib/scoring'
+import { computeLeaderboard, calculateGroupAverage } from '@/lib/scoring'
 import { toRoman } from '@/lib/format'
 import Rules from './Rules'
 
@@ -210,9 +210,67 @@ function HistoryTab({
     )
   }
 
+  // Group average per hole — only for holes whose committing phase is over
+  const holeAverages = sortedHoles.map((hole) => {
+    const revealed = isHoleRevealed(hole.id, gameState)
+    if (!revealed) return { hole, avg: null as number | null }
+    const sips = scores
+      .filter((s) => s.hole_id === hole.id && s.committed_sips != null)
+      .map((s) => s.committed_sips as number)
+    if (sips.length === 0) return { hole, avg: null }
+    return { hole, avg: calculateGroupAverage(sips) }
+  })
+
   return (
     <div className="px-5 py-5 space-y-1">
       <p className="smallcaps mb-3 px-1">Hvad har folk gættet?</p>
+
+      {/* Group average per hole */}
+      <div className="py-3 border-b border-rule">
+        <div className="flex items-baseline justify-between mb-2 px-1">
+          <p className="font-serif italic text-ink text-base">Gennemsnit</p>
+          <p
+            className="font-mono text-ink-muted text-xs"
+            style={{ letterSpacing: '0.08em' }}
+          >
+            slurke pr. stop
+          </p>
+        </div>
+        <div className="grid grid-cols-12 gap-px">
+          {holeAverages.map(({ hole, avg }) => (
+            <div
+              key={hole.id}
+              className={`text-center py-2 border ${
+                avg != null
+                  ? hole.is_practice
+                    ? 'bg-parchment-dark/60 border-rule text-ink-muted'
+                    : 'bg-parchment-light border-rule text-ink'
+                  : 'border-rule/50 text-ink-faint'
+              }`}
+              title={
+                avg != null
+                  ? `Stop ${toRoman(hole.id)}: gns. ${avg.toFixed(1)} slurke`
+                  : `Stop ${toRoman(hole.id)}: endnu ikke spillet`
+              }
+            >
+              <p className="font-mono text-base font-semibold leading-none">
+                {avg != null ? avg.toFixed(1) : '·'}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-12 gap-px mt-1 px-px">
+          {sortedHoles.map((h) => (
+            <p
+              key={h.id}
+              className="text-center font-mono text-ink-faint"
+              style={{ fontSize: '0.55rem', letterSpacing: '0.05em' }}
+            >
+              {toRoman(h.id)}
+            </p>
+          ))}
+        </div>
+      </div>
 
       {[...players]
         .sort((a, b) => a.display_order - b.display_order)
